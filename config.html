@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset = "UTF-8">
+	<title>Inexplicable Magic - Config</title>
+
+		<style>
+			.formSectionUnhighlighted {
+				background-color: white;
+				padding: 10px;
+				
+			}
+
+			.formSectionHighlighted {
+				background-color: lightgrey;
+				padding: 10px;				
+			}
+
+			table {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+
+			table, td, th {
+				border: 1px solid black;
+			}
+
+		</style>
+
+
+
+	</head>
+	<body>
+		<div class="formSectionUnhighlighted" id="chooseSessionType">
+			<fieldset>
+				<input type="radio" onclick="javascript:startNewFile();" name="nextexisting" checked value="startnew">Start new session<br>
+				<input type="radio" onclick="javascript:useExistingFile();" name="nextexisting" value="useexisting">Use existing annotations file<br>
+			</fieldset>
+		</div>
+		<div id="jsonFileDiv" hidden="true" class="formSectionUnhighlighted">
+			<h3>Set Annotations File</h3>
+			<button type="button" id="browseJSONFile" onclick="javascript:browseExistingJSONFile();">Browse</button>   <span id="labellingfile"></span>
+			<p id="jsonfiletatefeedback"></p>
+		</div>
+
+		<div id="dirDiv" class="formSectionHighlighted">
+			<h3>Set Images Directory</h3>
+			<button id="imageDirButton" type="button" onclick="javascript:browseImageDir();">Browse</button><span id="imagedir"></span>
+			<p id="imagesdirstatefeedback"></p>
+		</div>
+		<div id="validateImagesDiv" class="formSectionUnhighlighted" >
+			<h3>Validate Images Exist</h3>
+			<button id="validateImagesButton" disabled="true" type="button" onclick="javascript:validateImageFiles();">Validate Images</button> 
+			<br/><br/>
+			<div id="dirstats"></div>		
+		</div>
+		<br/>
+		
+		<div id="startLabellingDiv" class="formSectionUnhighlighted">
+			<div id="addNewImagesQuestion" hidden="true">
+				<input type="checkbox" id="appendNewImagesCheckbox" checked>Include new images in labelling sesion</input>
+				<br/><br/>
+			</div>
+			<button type="button" disabled="true" id="startButton" onclick="done();">Start Labelling</button>
+		</div>
+
+	<script>
+		var lastValidDirectory = ""
+		var useNewLabellingFile = true;
+		var labellingFileValid = false;
+		var validImagesDirectory  = true;
+		var existingLabellingFile = "";
+	
+		const {ipcRenderer} = require('electron')
+
+		function resetFormElements(){
+			document.getElementById("jsonFileDiv").hidden = true;
+			document.getElementById("imageDirButton").disabled = true;
+			document.getElementById("startButton").disabled = true;
+			document.getElementById("imagedir").innerHTML = "";
+			document.getElementById("dirstats").innerHTML = "";
+			document.getElementById("jsonfiletatefeedback").innerHTML = "";
+			document.getElementById("imagesdirstatefeedback").innerHTML = "";
+			document.getElementById("dirDiv").style.backgroundColor="transparent";
+			document.getElementById("validateImagesDiv").style.backgroundColor="transparent";
+			document.getElementById("validateImagesButton").disabled = true;
+			document.getElementById("startLabellingDiv").style.backgroundColor="transparent";
+			document.getElementById("dirDiv").style.backgroundColor="transparent";
+			document.getElementById("jsonFileDiv").style.backgroundColor="transparent";
+			document.getElementById("addNewImagesQuestion").hidden = true;
+			document.getElementById("appendNewImagesCheckbox").checked = true;
+		}
+
+		function startNewFile(){
+			resetFormElements();
+			useNewLabellingFile = true;
+
+			document.getElementById("dirDiv").style.backgroundColor="lightgrey";
+			document.getElementById("imageDirButton").disabled = false;
+			validImagesDirectory = false;
+			labellingFileValid = false;
+			lastValidDirectory = "";
+			existingLabellingFile = ""
+		}
+
+		function useExistingFile(){
+			resetFormElements();
+			useNewLabellingFile = false;
+			document.getElementById("jsonFileDiv").style.backgroundColor="lightgrey";
+			document.getElementById("jsonFileDiv").hidden = false;
+			validImagesDirectory = false;
+			labellingFileValid = false;
+			lastValidDirectory = "";
+			existingLabellingFile = ""
+		}
+
+
+		function done(){
+			let includeNewImages = true;
+			if(!useNewLabellingFile)
+				includeNewImages = document.getElementById("appendNewImagesCheckbox").checked
+			ipcRenderer.send('app:configDone', { "includeNewImages": includeNewImages });
+		}
+
+		function validateImageFiles(){
+			document.getElementById("dirstats").innerHTML = "Searching for images...";
+			ipcRenderer.send('app:initialiseLabellingState');			
+		}
+
+		function setBaseImageDirectoryInApp(){
+			ipcRenderer.send('app:setBaseImageDirectory', { "dir": lastValidDirectory});
+		}
+
+		function browseImageDir(){
+			ipcRenderer.send('app:getImagesDir', { "replyto": "config:setImageDirectoryPath" });
+		}
+
+		
+		ipcRenderer.on('config:setImageDirectoryPath', (event, arg) => {
+			if(arg.length > 0){
+				let paths = document.getElementById("imagedir");
+				paths.innerHTML = arg[0];
+				lastValidDirectory = arg[0];
+				testIfImagesDirExists( lastValidDirectory );
+			}
+			
+		});
+
+		function browseExistingJSONFile(){
+			ipcRenderer.send('app:getJSONFile', { "replyto": "config:setJSONFilePath" });
+		}
+
+		ipcRenderer.on('config:setJSONFilePath', (event, arg) => {
+			if(arg.length > 0){
+				let paths = document.getElementById("labellingfile");
+				paths.innerHTML = arg[0];
+				existingLabellingFile = arg[0];
+				testIfUserInputJSONIsValid();
+			}
+		});
+
+		ipcRenderer.on('config:fileMetadataResponse', (event, arg) => {
+			let statsObj = document.getElementById("dirstats");
+
+			let dir_total_images_OK_icon = "<font color=\"red\">&#10060;</font>";
+			let dir_total_images_OK_state = false;
+			let images_found_ok_icon = "<font color=\"red\">&#10060;</font>";
+			let images_found_ok_state = false;
+			let images_missing_ok_icon = "<font color=\"orange\">&#9888;</font>";
+
+			let new_images_ok_icon = "<font color=\"orange\">&#9888;</font>";
+
+			if(arg.dir_total_images > 0){
+				dir_total_images_OK_icon = "<font color=\"green\">&#10003;</font>";
+				dir_total_images_OK_state = true;
+			}
+
+			let table="<table width=\"400px\"><tr><td>Total images in dir</td><td width=\"50px\">"+arg.dir_total_images+"</td><td>"+dir_total_images_OK_icon+"</td></tr>";
+			if(!useNewLabellingFile){
+				if( arg.images_found > 0 ){
+					images_found_ok_icon = "<font color=\"green\">&#10003;</font>";
+					images_found_ok_state = true;
+				}
+
+				if( arg.missing_images == 0 ){
+					images_missing_ok_icon = "<font color=\"green\">&#10003;</font>";
+				}
+
+				let newImages = arg.dir_total_images - arg.images_found - arg.missing_images;
+				if(newImages < 1){
+					new_images_ok_icon = "<font color=\"green\">&#10003;</font>";
+				}else{
+					document.getElementById("addNewImagesQuestion").hidden = false;
+				}
+
+				table+="<tr><td>Images referenced in annotations file found</td><td>"+arg.images_found+"</td><td>"+images_found_ok_icon+"</td></tr>";
+				table+="<tr><td>Images referenced in annotations file missing</td><td>"+arg.missing_images+"</td><td>"+images_missing_ok_icon+"</td></tr>";
+				table+="<tr><td>New images not referenced in annotations file</td><td>"+newImages+"</td><td>"+new_images_ok_icon+"</td></tr>";
+			}else
+				images_found_ok_state = true;				
+
+			table+="</table>";
+			statsObj.innerHTML = table;
+			if( dir_total_images_OK_state && images_found_ok_state ){
+				document.getElementById("startButton").disabled = false;
+				document.getElementById("validateImagesDiv").style.backgroundColor="transparent";
+				document.getElementById("startLabellingDiv").style.backgroundColor="lightgrey";
+			}else
+				document.getElementById("startButton").disabled = true;
+		});
+
+		function testIfUserInputJSONIsValid(){
+			let path = document.getElementById("labellingfile");
+			testIfJSONFileValid( existingLabellingFile );
+		}
+
+
+		function testIfJSONFileValid(fpath){
+			ipcRenderer.send( "app:testJSONFileFormatState",  { "path": fpath, "replyto": "config:notifyJSONFileFormatState" } );
+		}
+
+	
+
+		function testIfImagesDirExists(){
+			testIfDirExists( lastValidDirectory, "config:notifyIfImagesDirExists" )
+		}
+
+		function testIfDirExists( dir, replyto ){
+			ipcRenderer.send('app:testDirectoryReadable', { "dir": dir, "replyto": replyto } )
+		}
+
+		ipcRenderer.on('config:notifyIfImagesDirExists', (event, arg) => {
+			let feedback = document.getElementById("imagesdirstatefeedback");
+			if( arg.readable ){
+				feedback.innerHTML = "<font color=\"green\">&#10003;</font> Directory readable";
+				lastValidDirectory = arg.dir;
+				setBaseImageDirectoryInApp( lastValidDirectory );
+				validImagesDirectory = true;
+				document.getElementById("dirDiv").style.backgroundColor="transparent";
+				document.getElementById("validateImagesDiv").style.backgroundColor="lightgrey";
+				document.getElementById("validateImagesButton").disabled = false;
+				//Auto validate the images when the user has set the directory manually
+				if(useNewLabellingFile)
+					validateImageFiles();
+			}else{
+				feedback.innerHTML = "<font color=\"red\">&#10060;</font> Directory does not exist or cannot be read";
+			}
+		});
+
+		ipcRenderer.on('config:notifyJSONFileFormatState', (event, arg) => {
+			let feedback = document.getElementById("jsonfiletatefeedback");
+			if( arg.valid ){
+				feedback.innerHTML = "<font color=\"green\">&#10003;</font> File valid";
+				if( arg.image_dir_base_path != "" ){
+					let dir_path = document.getElementById("imagedir");
+					lastValidDirectory = arg.image_dir_base_path;
+					dir_path.innerHTML = lastValidDirectory;
+					labellingFileValid = true;
+					document.getElementById("imageDirButton").disabled = false;
+					document.getElementById("jsonFileDiv").style.backgroundColor="transparent";
+					document.getElementById("dirDiv").style.backgroundColor="lightgrey";
+					testIfImagesDirExists();
+				}
+				
+			}else{
+				feedback.innerHTML = "<font color=\"red\">&#10060;</font> "+arg.error;
+			}
+		});
+		
+
+	</script>	
+
+	</body>
+
+	
+<html>
+
+

@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <meta charset = "UTF-8">
+      <title>Inexplicable Magic - Image Labelling Tool</title>
+
+    <style>
+	/* Disable window scrollbars */
+	body {
+	  overflow-y: hidden; /* Hide vertical scrollbar */
+	  overflow-x: hidden; /* Hide horizontal scrollbar */
+	}
+
+
+	/* Style for a label inside a user drawn box */
+    	.boxLabel {
+		background-color: white;
+		font-size: 0.75em;
+		text-align: left;
+		visibility: visible;
+	}
+
+	/* Style for a modal dialogue box div element */
+	.modalForm {
+		position: absolute;
+		visibility: hidden;
+		width: 200px;
+		height: 200px;
+		left: 50px;
+		top: 50px;
+		border-width: 3px;
+		border-color: #000000;
+		border-style: solid;
+		background-color: white;
+		padding: 10px;
+	}
+
+	.modalForm2 {
+		position: absolute;
+		visibility: hidden;
+		display: inline-block;
+		left: 50px;
+		top: 50px;
+		border-width: 3px;
+		border-color: #000000;
+		border-style: solid;
+		background-color: white;
+		padding: 10px;
+	}
+
+	/* Initial image scaling */
+	.imgscale {
+		height: auto;
+		width: auto;
+		border-width: 1px;
+		border-style: solid;
+		border-color: #000000;
+	}
+
+	/* Wastebasket icon style for deleting categories */
+	.binStyle {
+		 font-size: 1.5em;
+		 color: black;
+		 text-decoration: none;
+	}
+
+	/* Scrollable region for the category names */
+	.categoryScroll {
+		background-color: #eeeeee;
+		width: 230px;
+		height: 500px;
+		min-width: 200px;
+		overflow-x: hidden;
+		overflow-y: auto;
+      	}
+
+	.columnFixed {
+		background-color: #eeeeee;
+		width: 230px;
+		min-width: 230px;
+		margin: 10px;
+		margin-top: 0px;
+		padding-left: 8px;
+
+	}
+
+	/* Table holding the categories */
+	.boxCategoryTable {
+		table-layout: fixed;
+		width: 220px;
+		min-width: 220px;
+		max-width: 220px;
+		word-wrap: break-word;
+		border-style: solid;
+		border-width: 1px;
+	}
+
+	/* The text of a category name */
+	.categoryName {
+		
+	}
+
+	.row {
+  		display: flex;
+		max-height: 500px;
+	}		
+
+	/* Column containing the main image */
+	.column {
+  		flex: 50%;
+		overflow-x: scroll;
+		overflow-y: scroll;
+		max-width: 1200px;
+		max-height: 900px;
+		height: 500px;
+		position: relative;
+		text-align: center;
+	}
+
+	/* Prev and next buttons */
+	.buttonPrevNext {
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 10px 16px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+
+	.addNewButton {
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 5px 5px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 16px;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+
+	.deleteEditButton {
+		background-color: #4CAF50;
+		border: none;
+		color: white;
+		padding: 5px 5px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 10px;
+		margin: 4px 2px;
+		cursor: pointer;
+	}
+
+  </style>
+
+   </head>
+   
+   <body>
+
+<div class="row">
+	<div class="column" id="imageDiv" >
+		<img class="imgscale" draggable="false" id="theimage" src="" />
+	</div>
+	<!-- Right hand columns list of categories and tags -->
+	<div class="columnFixed" id="menuColumn" >
+		<div id="columnHeading">
+			<div align="center"><a title="Previous Image (Shortcut:Numpad 4)" class="buttonPrevNext" href="javascript:prevImage();">Prev</a><a title="Next Image (Shortcut:Numpad 6)" class="buttonPrevNext" href="javascript:nextImage();">Next</a></div>
+			<div align="center"><span id="imageCounter">0/0</span></div>
+			<div align="center"><a href="javascript:showAddCategoryForm();" class="addNewButton" >Add New Box Category</a></div>
+			<div><a class="deleteEditButton" href="javascript:showAddCategoryForm(true);">Edit Selected</a><a class="deleteEditButton" href="javascript:showDeleteCategoryForm();">Delete Selected</a></div>
+		</div>
+		<div class="categoryScroll" id="catScroll" >
+			<table class="boxCategoryTable" id="categorytable"></table>
+			<span>Applied Boxes</span>
+			<table class="boxCategoryTable" id="appliedLabelsTable">
+		</div>
+	</div>
+</div>
+
+<! -- Modal Forms -->
+<div id="newcatform" class="modalForm2">
+	<form onsubmit="return false;">
+		<input type="hidden" id="catModify" value="false" >
+		<label for="catname">New Category Name:</label><br>	
+		<input type="text" id="catname" name="catname" placeholder="Category Name"><br>
+		<label for="hotkey">HotKey:</label><br>
+		<input type="text" id="hotkey" name="hotkey" placeholder="a" maxlength="1" ><br>
+		<br/>		
+		<button type="submit" onclick="addCategorySubmit();">Add</button>
+		<button type="button" onclick="addCategoryCancel();">Cancel</button>
+		
+	</form>
+</div>
+<!-- When the user deletes a category -->
+<div id="deleteCategoryForm" class="modalForm2">
+	<fieldset id="deleteCategoryRadioChoices">
+		<input type="radio" name="choiceset1" checked id="onlyDeleteCategory">Remove category name only<br>
+		<input type="radio" name="choiceset1" id="deleteBoxesAllImages">Also delete boxes on <font color="red">ALL</font> images with this category</input><br>
+	</fieldset><br/>
+	<button type="button" onclick="handleDeleteCategoryForm();">Delete</button>
+	<button type="button" onclick="hideDeleteCategoryForm();">Cancel</button>
+</div>
+
+<!-- Category delete chosen from the menu -->
+<div id="deleteBoxesByCategoryForm" class="modalForm2">
+	<label for="deleteBoxesByCatListOfCats">Select category:</label>
+	<select name="Category" id="deleteBoxesByCatListOfCats"></select><br/><br/>
+	<fieldset id="deleteBoxByCategoryRadioChoices">
+		<input type="radio" name="choiceset2" id="deleteBoxesByCatThisImage">Delete boxes on this image only with this category<br>
+		<input type="radio" name="choiceset2" id="deleteBoxesByCatAllImages">Delete boxes on ALL images with this category <font color="red">&#9888;</font><br>
+	</fieldset><br/>
+	<button type="button" onclick="handleDeleteBoxesByCategoryForm();">Delete</button>
+	<button type="button" onclick="hideDeleteBoxesByCategoryForm();">Cancel</button>
+</div>
+
+<!-- Rename a category that's not necessarily onscreen -->
+<div id="renameBoxCategory" class="modalForm2">
+	<label for="renameBoxCategorySelectCategory">Select category:</label>
+	<select name="Category" id="renameBoxCategorySelectCategory"></select><br/><br/>
+	<label for="catname">New Category Name:</label><br>	
+	<input type="text" id="renameBoxCategoryNewCategory" placeholder="New Category Name"><br>
+	<button type="button" onclick="handleRenameBoxCategoryForm();">Rename</button>
+	<button type="button" onclick="hideRenameBoxCategoryForm();">Cancel</button>
+</div>
+
+<SCRIPT>
+const electron = require("electron");
+const {ipcRenderer} = require('electron')
+
+//Boxes will be allocated colours in this order
+const listOfColours = [ "red", "green", "blue", "magenta", "yellow", "orange", "cyan", "gray", "hotpink", "lime", "chocolate" ]
+var lastAllocatedColour = 0;
+
+var current_div = ""		//The name of the currently selected box (or box about to be drawn not yet on the screen)
+var currentIDNum = 1		//Incrementing number used to name divs uniquely to represent the boxes
+var appliedLabelsList = []	//List of div IDs of boxes that have been drawn and are now on screen
+
+var category_meta_data = []	//Names, hotkeys and colours of the user specified box categories currently listed
+var selectedCategory = "";	//Name of the currently selected category
+
+var hotKeysEnabled = true;	//Set to false when in a dialogue box and true in a context when the user can use the hotkeys
+var zoomState = "fitToWindow"	//Default way to display the image
+
+var clickSelectionIterator = 0;	//Cycling through different box selections
+var boxLabelsCurrentlyVisible = true;	//User has selected to show box labels
+var modalCurrentlyOnScreen = false;	//Is a dialogue currently on screen
+
+var lockSwitchImage = false;	//Lock-out commands that switch image until the labelling state has been fully restored
+
+//List all the box categories currently on the current image
+function getBoxCategoriesOnScreen(includeUnused){
+	let labeldict = {}
+	for(let i=0;i<appliedLabelsList.length;i++){
+		let label = document.getElementById( appliedLabelsList[i] ).boxlabel;
+		labeldict[label] = 1;
+	}
+	if(includeUnused){
+		for(let i=0;i<category_meta_data.length;i++){
+			labeldict[ category_meta_data[i].name ] = 1;
+		}
+	}
+
+	let catList =  Object.keys( labeldict )
+	return catList;
+}
+
+//Called on app first start with an existing labelling file
+function inialiseBoxCategoryList(catmetadatalist){
+	for(const boxcat of catmetadatalist)
+		addBoxCategory( boxcat.name, boxcat.hotkey, boxcat.colour );
+}
+
+function hideShowLabels(){
+	if(boxLabelsCurrentlyVisible){
+		boxLabelsCurrentlyVisible = false;
+		for(const divID of appliedLabelsList)
+			setLabelVisibilityOnBox( document.getElementById(divID), false );
+		
+	}else{
+		boxLabelsCurrentlyVisible = true;
+		for(const divID of appliedLabelsList)
+			setLabelVisibilityOnBox( document.getElementById(divID), true );
+	}
+}
+
+function appendAllBoxCategories(existingCategories){
+	let catdict = {}
+
+	for( const cat of existingCategories )
+		catdict[cat] = 1;
+
+	for(const cat of getBoxCategoriesOnScreen(false)){
+		catdict[cat] = 1;
+	}
+
+	for(const catinlist of category_meta_data){
+		if(catinlist.name in catdict)
+			delete catdict[ catinlist.name ];
+	}
+
+	for( const boxcat of Object.keys(catdict) )
+		addBoxCategory( boxcat, "" );
+
+}
+
+function deselectCurrentBox(){
+	if(current_div != undefined && current_div != ""){
+		let box = document.getElementById(current_div);
+		if(box != undefined){
+			box.style.borderStyle="solid";
+			//Correct bug where never did a mousedown to finalise last div
+			let lastDiv = document.getElementById(current_div)
+			if( lastDiv.style.visibility=="visible" && lastDiv.inuse==false ){
+				lastDiv.style.visibility="hidden";
+			}
+		}
+	}
+}
+
+function showRenameCategoryForm(){
+	if(!modalCurrentlyOnScreen){
+		modalCurrentlyOnScreen = true;
+		hotKeysEnabled = false;
+		document.getElementById("renameBoxCategorySelectCategory").options.length = 0;
+		document.getElementById("renameBoxCategory").style.visibility = "visible";
+		ipcRenderer.send('app:GetAllBoxCategories', { "replyto": "labeller:populateRenameCategoryList", "currentlyOnScreen": getBoxCategoriesOnScreen(true)  } );	
+	}
+}
+
+function populateSelectWithList( selectObj, itemList ){
+	let sel = document.getElementById( selectObj );
+	for(let i=0;i<itemList.length;i++){
+		let selAdd = document.createElement('option');
+		selAdd.text = itemList[i];
+		selAdd.value = itemList[i];
+		sel.add(selAdd);
+		
+	}
+}
+
+ipcRenderer.on('labeller:populateRenameCategoryList', (event, arg) => {
+	populateSelectWithList( 'renameBoxCategorySelectCategory', arg );
+});
+
+function showDeleteBoxesByCategoryForm(){
+	if(!modalCurrentlyOnScreen){
+		hotKeysEnabled = false;
+		modalCurrentlyOnScreen = true;
+		document.getElementById("deleteBoxesByCatListOfCats").options.length = 0;
+		document.getElementById("deleteBoxesByCatThisImage").checked = true;
+		document.getElementById("deleteBoxesByCategoryForm").style.visibility = "visible"
+		ipcRenderer.send('app:GetAllBoxCategories', { "replyto": "labeller:populateDeleteBoxesByCategoryList", "currentlyOnScreen": getBoxCategoriesOnScreen()  } );
+	}
+}
+
+ipcRenderer.on('labeller:populateDeleteBoxesByCategoryList', (event, arg) => {
+	populateSelectWithList( 'deleteBoxesByCatListOfCats', arg );
+});
+
+function hideDeleteBoxesByCategoryForm(){
+	hotKeysEnabled = true;
+	modalCurrentlyOnScreen = false;
+	document.getElementById("deleteBoxesByCategoryForm").style.visibility = "hidden"
+}
+
+function handleDeleteBoxesByCategoryForm(){
+	let sel = document.getElementById("deleteBoxesByCatListOfCats");
+	
+
+	if( document.getElementById("deleteBoxesByCatThisImage").checked ){
+		deleteBoxesOnScreenByCategory( sel.value );
+	}else if( document.getElementById("deleteBoxesByCatAllImages").checked  ){
+		deleteAllBoxesOnAllImagesByCategory( sel.value );
+	}
+
+	hideDeleteBoxesByCategoryForm();
+}
+
+function validateNewBoxCategoryForm(isModify=false){
+	let catname = document.getElementById("catname").value;
+	let hotkey = document.getElementById("hotkey").value;
+
+	if( catname == "" ){ alert("Categeory name cannot be blank."); return false; }
+
+	if( (!isModify) || (selectedCategory != catname) ){
+		let catNum = getBoxCategoryRowNum( catname );
+		if( catNum >= 0 ){ alert("Categeory name already exists"); return false; }
+	}
+
+	return true;
+}
+
+function showDeleteCategoryForm(){
+	if(!modalCurrentlyOnScreen){
+		if(selectedCategory != undefined && selectedCategory != ""){
+			modalCurrentlyOnScreen = true;
+			hotKeysEnabled = false;
+			document.getElementById("onlyDeleteCategory").checked = true;
+			document.getElementById("deleteCategoryForm").style.visibility = "visible"
+		
+		}
+	}
+}
+
+
+
+function handleDeleteCategoryForm(){
+	let whichItem =	document.getElementById("deleteBoxesAllImages").checked
+	if( whichItem ){
+		deleteAllBoxesOnAllImagesByCategory( selectedCategory );
+	}
+	deleteSelectedBoxCategory();
+	hideDeleteCategoryForm();
+}
+
+function hideDeleteCategoryForm(){
+	hotKeysEnabled = true;
+	document.getElementById("deleteCategoryForm").style.visibility = "hidden";
+	modalCurrentlyOnScreen = false;
+}
+
+//Display the form to add a new category
+//If isModify is true then we are modifying an existing category
+function showAddCategoryForm(isModify=false){
+	if(!modalCurrentlyOnScreen){
+		if( !isModify || ((selectedCategory != "") && isModify)){
+			hotKeysEnabled = false;
+			modalCurrentlyOnScreen = true;
+			document.getElementById("newcatform").style.visibility = "visible"
+			document.getElementById("catname").focus();
+			document.getElementById("catModify").value = "false";
+			if( (selectedCategory != "") && isModify ){
+				let selectedRow = getBoxCategoryRowNum( selectedCategory );
+				if(selectedRow != -1){
+					document.getElementById("catModify").value = "true";
+					let hotkey = category_meta_data[selectedRow].hotkey;
+					let name = category_meta_data[selectedRow].name;
+					document.getElementById("catname").value = name;
+					document.getElementById("hotkey").value = hotkey;
+				}
+			}		
+		}
+	}
+}
+
+//When the user has clicked "Cancel" in the dialogue box for adding a new category
+function addCategoryCancel(){
+	document.getElementById("newcatform").style.visibility = "hidden"
+	document.getElementById("catname").value = ""
+	document.getElementById("hotkey").value = "";
+	hotKeysEnabled = true;
+	modalCurrentlyOnScreen = false;
+}
+
+function handleRenameBoxCategoryForm(){
+	let newCat = document.getElementById("renameBoxCategoryNewCategory").value;
+	if(newCat == ""){
+		alert("New category name cannot be blank");
+		return;
+	}
+
+	if( getBoxCategoryRowNum( newCat ) >= 0){
+		alert("That category already exists");
+		return;
+	}
+
+	let whichItem = (document.getElementById("renameBoxCategorySelectCategory")).value;
+	if(whichItem != undefined && whichItem != ""){
+
+		renameBoxCategoryGlobally( whichItem, newCat );
+		
+	}
+
+	hideRenameBoxCategoryForm();
+}
+
+function hideRenameBoxCategoryForm(){
+	document.getElementById("renameBoxCategory").style.visibility = "hidden"
+	document.getElementById("renameBoxCategoryNewCategory").value = ""
+	hotKeysEnabled = true;
+	modalCurrentlyOnScreen = false;
+}
+
+//When the user has clicked "Add" in the dialogue box for adding a new category
+function addCategorySubmit(){
+	let isModifyText = document.getElementById("catModify").value;
+	let isModify = false;
+	if(isModifyText=="true")
+		isModify = true;
+
+	if(validateNewBoxCategoryForm(isModify)){
+		let catname = document.getElementById("catname").value;
+		let hotkey = document.getElementById("hotkey").value;
+
+		if( isModify == false ){
+			addBoxCategory( catname, hotkey );
+		}else{
+			renameBoxCategoryGlobally( selectedCategory, catname, hotkey );
+		}
+
+		//Remove the form from the screen
+		addCategoryCancel();
+		stateChange();
+		syncCategoryListMain();
+	}
+	
+}
+
+
+function addBoxCategory(catname, hotkey, last_colour){
+
+	//The category name
+	let table = document.getElementById("categorytable");
+	let row = table.insertRow();
+	
+	let colour = getNextColour();
+	if(last_colour != undefined)
+		colour = last_colour;
+
+	let cell1 = row.insertCell();
+	cell1.innerHTML = "<span class=\"categoryName\"><font color=\""+colour+"\">&#9724;</font>"+catname+"</span>";
+	cell1.style.borderStyle = "solid";
+	cell1.style.borderWidth = "1px";
+	cell1.style.userSelect = "none";
+	cell1.addEventListener("click",function(){
+	   	highlightCategoryInList( catname );
+	});
+
+
+	//Display the hotkey to the user
+	let cell2 = row.insertCell();
+	cell2.innerHTML = "<b>"+hotkey+"</b>";
+	cell2.style.textAlign = "center";
+	cell2.style.borderStyle = "solid";
+	cell2.style.borderWidth = "1px";
+	cell2.style.fontSize = "1em";
+	cell2.style.userSelect = "none";
+	cell2.style.width="20px";
+
+	category_meta_data.push( { "name": catname, "colour": colour, "hotkey": hotkey } )
+
+}
+
+//Rename a box category 
+function renameBoxCategoryGlobally(fromName, toName, newHotKey=""){
+	
+	let table = document.getElementById("categorytable");
+	let catNum = getBoxCategoryRowNum( fromName );
+
+	//Change the label in category menu
+	if(catNum >= 0){
+		//Hack to drop anonymous event listeners
+		let originalCell = table.rows[catNum].cells[0];
+		var new_element = originalCell.cloneNode(true);
+		originalCell.parentNode.replaceChild(new_element, originalCell);
+		
+		table.rows[catNum].cells[0].innerHTML = "<span class=\"categoryName\"><font color=\""+category_meta_data[ catNum ].colour+"\">&#9724;</font>"+toName+"</span>";
+		category_meta_data[catNum].name = toName;
+		if( newHotKey != "" ){
+			table.rows[catNum].cells[1].innerHTML = "<b>"+newHotKey+"</b>";
+			category_meta_data[catNum].hotkey = newHotKey;
+		}
+		
+		table.rows[catNum].cells[0].addEventListener("click",function(){
+	   		highlightCategoryInList( toName );
+		});
+
+
+		if( selectedCategory == fromName ){
+			selectedCategory = toName;
+		}
+	}
+
+	//Change the labels on any boxes drawn and currently being displayed
+	for(let i=0;i<appliedLabelsList.length;i++){
+		let divObj = document.getElementById(appliedLabelsList[i])
+		let childNodes = divObj.childNodes;
+		for(let j=0;j<childNodes.length;j++){
+			if(childNodes[j].className == "boxLabel"){	
+				if( childNodes[j].innerHTML == fromName)
+					childNodes[j].innerHTML = toName;
+			}
+		}
+		if( divObj.boxlabel == fromName )
+			divObj.boxlabel = toName;
+	}
+
+	//Change the label in the applied labels table
+	let appliedLabelsTable = document.getElementById("appliedLabelsTable");
+	for(let i=0;i<appliedLabelsTable.rows.length;i++){
+		if( appliedLabelsTable.rows[i].cells[0].innerHTML == fromName )
+			appliedLabelsTable.rows[i].cells[0].innerHTML = toName;
+	}
+
+	ipcRenderer.send('app:RenameBoxCategoryGlobally', {"fromLabel": fromName, "toLabel": toName } );	
+	
+}
+
+//Delete the catery that is currently selected
+function deleteSelectedBoxCategory(){
+	if(selectedCategory != undefined && selectedCategory != ""){
+		deleteBoxCategory( selectedCategory );
+	}
+}
+
+//Delete a category from the right hand box category table by name
+function deleteBoxCategory(category){
+	let rowNum = getBoxCategoryRowNum(category);
+	if(rowNum >= 0){
+		if( category == selectedCategory )
+			highlightCategoryInList();
+		current_div = ""	
+		let table = document.getElementById("categorytable");
+		table.deleteRow(rowNum);
+		category_meta_data.splice(rowNum,1);
+		syncCategoryListMain();
+	}
+}
+
+//Given a box category name, return it's index in the category table or -1 if it doesn't exist
+function getBoxCategoryRowNum(category){
+	let num = -1;
+	category_meta_data.forEach((item, index) => {if(item.name == category){num = index;return;}}); 
+	return num;
+}
+
+//Given a box category name, return it's index in the category table or -1 if it doesn't exist
+function getHotKeyBoxCategoryRowNum(hotkeyChar){
+	let num = -1;
+	category_meta_data.forEach((item, index) => {
+		if(item.hotkey.toUpperCase() == hotkeyChar.toUpperCase() ){
+			num = index;
+			return;
+		}
+	}); 
+	return num;
+}
+
+//Get a new colour name
+function getNextColour(){
+	colour =  listOfColours[ lastAllocatedColour ];
+	lastAllocatedColour++;
+	if( lastAllocatedColour >=  listOfColours.length )
+		lastAllocatedColour = 0;
+	return colour;
+}
+
+//Functions to handle drawing a box on the image
+
+//Generate a DIV element that will be used to represent the box
+function createStyleDiv(colour, label, divID, selected=true) {
+
+	let div = document.createElement("div");
+
+	div.id = divID;
+	div.style.position = "absolute";
+	div.style.visibility = "hidden";
+	div.style.width = "0px";
+	div.style.height = "0px";
+	div.textAlign = "left";
+	div.style.borderWidth = "2px";
+	div.style.boxSizing = "border-box"; //Include the padding and border in the element width and height
+	div.style.borderColor = colour;
+	div.style.userSelect = "none";	//Prevent selection of text in the div
+	if(selected)
+		div.style.borderStyle = "dashed";
+	else
+		div.style.borderStyle = "solid";
+	div.style.pointerEvents = "none";				//Make div ignore clicks so we can draw one div over another
+	div.innerHTML = "<span class=\"boxLabel\">"+label+"</span>" ;	//Add a label to the box
+	div.boxlabel = label						//Attribute for machine readable copy of the label
+	div.inuse = false;
+	div.addEventListener("click", smartSelect );			//Shift click select option
+	
+	//Add to the div that acts a container for the user drawn boxes
+	var all_boxes = document.getElementById("imageDiv");
+	all_boxes.appendChild(div)
+	
+	return div;
+}
+
+var drawingWidth = true
+var drawingHeight = true
+
+var currentlyDrawingBox = false;
+
+
+//Use has clicked on theimage to indicate starting drawing a box
+function startBox (evt) {
+	if(current_div != undefined && current_div != ""){
+		currentlyDrawingBox = true;
+		let imgDiv = document.getElementById("imageDiv");
+		let mainImg = document.getElementById("theimage");
+
+		//Calculate offset to draw relative to the scroll and position of the div containing the image
+		let offsetX = imgDiv.offsetLeft - imgDiv.scrollLeft;
+		let offsetY = imgDiv.offsetTop - imgDiv.scrollTop;
+
+
+		evt.preventDefault();
+		let r = document.getElementById(current_div);
+		setLabelVisibilityOnBox( r, false );
+		r.style.width = 0;
+		r.style.height = 0;
+		r.style.left = (evt.clientX - offsetX)+ 'px';
+		r.style.top = (evt.clientY - offsetY) + 'px';
+		r.style.visibility = 'visible';
+		mainImg.onmousemove = moveBox;
+		drawingWidth = true;
+		drawingHeight = true;
+		stateChange();
+	}
+}
+
+//User is moving the mouse while holding down the button
+function moveBox (evt) {
+	if(current_div != undefined && current_div != ""){
+		let imgDiv = document.getElementById("imageDiv");
+	
+		let offsetX = imgDiv.offsetLeft - imgDiv.scrollLeft;
+		let offsetY = imgDiv.offsetTop - imgDiv.scrollTop;
+
+
+		let r = document.getElementById(current_div);
+		let diffWidth = (evt.clientX - offsetX) - parseInt(r.style.left) ;
+		let diffHeight = (evt.clientY - offsetY) - parseInt(r.style.top) ;
+
+		if(drawingWidth){
+			if(diffWidth < 0){
+				drawingWidth = false;
+			}
+		}else{
+			if( (evt.clientX - offsetX) > (parseInt(r.style.left) + parseInt(r.style.width)) ){
+				drawingWidth = true;
+			}
+		}
+
+		if(drawingHeight){
+			if(diffHeight < 0){
+				drawingHeight = false;
+			}
+		}else{
+			if( (evt.clientY - offsetY) > (parseInt(r.style.top) + parseInt(r.style.height)) ){
+				drawingHeight = true;
+			}
+		}
+
+		if(drawingWidth){
+			r.style.width = diffWidth+"px"
+		}else{
+			let old_width = parseInt(r.style.width);
+			r.style.left = (evt.clientX - offsetX)+"px"
+			r.style.width = (old_width - diffWidth) +"px"
+		}
+
+		if(drawingHeight){
+			r.style.height = diffHeight+"px"
+		}else{
+			let old_height = parseInt(r.style.height);
+			r.style.top = (evt.clientY - offsetY)+"px"
+			r.style.height = (old_height - diffHeight) +"px"
+		}
+
+	}
+	return false; // otherwise IE won't fire mouseup :/
+}
+
+//User has released the mouse button
+function stopBox (evt) {
+	if(current_div != undefined && current_div != ""){
+		let mainImg = document.getElementById("theimage");
+		mainImg.onmousemove = null;
+		mainImg.onmouseup = null;
+		let r = document.getElementById(current_div);
+
+	
+		//Prevent leaking outside the image area
+		if( (parseInt(r.style.top)+parseInt(r.style.height)) >= (mainImg.offsetTop + mainImg.height) )
+			r.style.height = ((mainImg.offsetTop + mainImg.height-1) - parseInt(r.style.top))+"px";
+		if( (parseInt(r.style.left)+parseInt(r.style.width)) >= (mainImg.offsetLeft + mainImg.width) )
+			r.style.width = ((mainImg.offsetLeft + mainImg.width-1) - parseInt(r.style.left))+"px";
+
+		resetBoxPercentages( r );	
+		r.inuse = true;
+		if( boxLabelsCurrentlyVisible )
+			setLabelVisibilityOnBox( r, true )		
+		
+
+		setBoxAsApplied(current_div);
+		currentlyDrawingBox = false;
+	}
+}
+
+function setLabelVisibilityOnBox(boxDiv, visible){
+	let childNodes = boxDiv.childNodes;
+	for(let i=0;i<childNodes.length;i++){
+			if(childNodes[i].className == "boxLabel"){
+				if(visible)
+					childNodes[i].style.visibility = "visible";
+				else
+					childNodes[i].style.visibility = "hidden";
+			}
+	}
+}
+
+function resetBoxPercentages( boxDiv ){
+	let mainImg = document.getElementById("theimage");
+	imgWidth = mainImg.width;
+	imgHeight = mainImg.height
+
+	//Avoid divide by zero on bugs
+	if(imgWidth > 1 && imgHeight > 1){
+		boxDiv.curBoxLeftPct =  (parseInt(boxDiv.style.left)-mainImg.offsetLeft)/(mainImg.width-1);
+		boxDiv.curBoxWidthPct =  parseInt(boxDiv.style.width)/mainImg.width;
+		boxDiv.curBoxTopPct =  (parseInt(boxDiv.style.top)-mainImg.offsetTop)/(mainImg.height-1);
+		boxDiv.curBoxHeightPct =  parseInt(boxDiv.style.height)/mainImg.height;
+
+		//Defensive code for bugs elsewhere
+		if( boxDiv.curBoxLeftPct > 1 )
+			boxDiv.curBoxLeftPct = 1
+		if( boxDiv.curBoxLeftPct < 0 )
+			boxDiv.curBoxLeftPct = 0;
+
+		if( boxDiv.curBoxWidthPct > 1 )
+			boxDiv.curBoxWidthPct = 1
+		if( boxDiv.curBoxWidthPct < 0 )
+			boxDiv.curBoxWidthPct = 0;
+
+		if( boxDiv.curBoxTopPct > 1 )
+			boxDiv.curBoxTopPct = 1
+		if( boxDiv.curBoxTopPct < 0 )
+			boxDiv.curBoxTopPct = 0;
+
+		if( boxDiv.curBoxHeightPct > 1 )
+			boxDiv.curBoxHeightPct = 1
+		if( boxDiv.curBoxHeightPct < 0 )
+			boxDiv.curBoxHeightPct = 0;
+	}
+}
+
+function wholeWindowMouseUpHandler(evt){
+	if( currentlyDrawingBox ){
+		stopBox(evt);
+	}
+}
+
+function findDivObjectInAppliedLabels(divID){
+	for(let i=0;i<appliedLabelsList.length;i++){
+		if( divID == appliedLabelsList[i] )
+			return i;
+	}
+	return -1;
+}
+
+function setBoxAsApplied(divID){
+
+	//Add the last drawn box to the list if it doesn't exist	
+	if( findDivObjectInAppliedLabels( divID ) < 0){
+		let divObj = document.getElementById(divID);
+		if(divObj.inuse && divObj.style.visibility=="visible"){
+			appliedLabelsList.push( divID );
+			let table = document.getElementById("appliedLabelsTable");
+			let row = table.insertRow();
+			let cell1 = row.insertCell();
+			cell1.addEventListener("click",function(){
+			   	setBoxAsCurrent( divID );
+			});
+			cell1.style.width="70%";
+			cell1.innerHTML = divObj.boxlabel;
+
+			//The delete icon
+			let cell2 = row.insertCell();
+			cell2.innerHTML = "<a title=\"Delete\" class=\"binStyle\" href=\"javascript:deleteBox(\'"+divID+"\');\">&#128465;</a>";
+			cell2.style.textAlign = "right";
+
+		}
+	}
+}
+
+function deleteAllBoxesOnAllImagesByCategory( categoryName ){
+	deleteBoxesOnScreenByCategory( categoryName );
+	ipcRenderer.send('app:DeleteAllInstancesOfBoxCategory', {"catname": categoryName } );
+}
+
+function deleteBoxesOnScreenByCategory( categoryName ){
+	let toDelete = [];
+	for(let i=0;i<appliedLabelsList.length;i++){
+		boxlabel = document.getElementById( appliedLabelsList[i] ).boxlabel;
+		if(  boxlabel == selectedCategory ) {
+			toDelete.push( appliedLabelsList[i] );
+		}
+	}
+	for(let i=0;i<toDelete.length;i++){
+		deleteBox( toDelete[i] );
+	}
+	
+} 
+
+function deleteBox( divID ){
+
+	if(divID != undefined && divID != "" ){
+		let rownum = findDivObjectInAppliedLabels( divID );
+		if( rownum >= 0 ){
+			let table = document.getElementById("appliedLabelsTable");
+			table.deleteRow(rownum);
+			let divObj = document.getElementById( divID );
+			if( divObj != undefined ){
+				divObj.remove();
+			}
+
+			appliedLabelsList.splice(rownum,1);
+			if(current_div == divID){		
+				current_div == ""
+			}
+			stateChange();
+		}
+	}
+}
+
+//Allow selection of overlapping divs on shift-click
+function smartSelect(evt){
+	
+	let imgDiv = document.getElementById("imageDiv");
+	let offsetX = imgDiv.offsetLeft - imgDiv.scrollLeft;
+	let offsetY = imgDiv.offsetTop - imgDiv.scrollTop;
+	let clickPositionInDivX = (evt.clientX - offsetX);
+	let clickPositionInDivY = (evt.clientY - offsetY);
+	
+
+	let divsInClickZone = []
+
+	for(let i=0;i<appliedLabelsList.length;i++){
+		let divObj = document.getElementById(appliedLabelsList[i]);
+		let divLeft = parseInt( divObj.style.left );
+		let divRight = divLeft + parseInt( divObj.style.width ) - 1;
+		let divTop = parseInt( divObj.style.top );
+		let divBottom = divTop + parseInt( divObj.style.height ) - 1;;
+		if((divLeft <= clickPositionInDivX) && (divRight >= clickPositionInDivX)){
+			if( divTop<=clickPositionInDivY && divBottom >=  clickPositionInDivY ){
+				divsInClickZone.push( appliedLabelsList[i] );			
+			}
+		}
+	}
+
+	if( divsInClickZone.length > 0 ){
+		divsInClickZone.sort(function(x,y) {
+			let divX = document.getElementById(x);
+			let divY = document.getElementById(y);
+			
+			if( parseInt( divX.style.width ) < parseInt( divY.style.width ) )
+				return -1;
+			if( parseInt( divX.style.width ) > parseInt( divY.style.width ) )
+				return 1;
+			return 0;
+		});
+
+		if( clickSelectionIterator >= divsInClickZone.length)
+			clickSelectionIterator = 0;
+		setBoxAsCurrent(divsInClickZone[clickSelectionIterator]);
+		clickSelectionIterator++;
+	}
+	
+}
+
+
+
+
+//Select the box by divID
+function setBoxAsCurrent(divID){
+	deselectCurrentBox();
+	current_div = divID;
+	let divObj = document.getElementById(divID);
+	divObj.style.borderStyle="dashed";
+}
+
+function duplicateSelectedBox(){
+	if(current_div != ""){
+		let mainImg = document.getElementById("theimage");
+		let cloneObj = document.getElementById(current_div);
+		let newDivID = "box"+currentIDNum;
+		let newDiv = createStyleDiv(cloneObj.style.borderColor,cloneObj.boxlabel, newDivID);
+		newDiv.style.visibility = 'visible';
+		if( (parseInt(cloneObj.style.left)+10+parseInt(cloneObj.style.width)) < (mainImg.offsetLeft + mainImg.width)  )
+			newDiv.style.left = (parseInt(cloneObj.style.left)+10)+"px";
+		else
+			newDiv.style.left = cloneObj.style.left;
+		newDiv.style.width = cloneObj.style.width;
+
+		if( (parseInt(cloneObj.style.top)+10+parseInt(cloneObj.style.height)) < (mainImg.offsetTop + mainImg.height) )
+			newDiv.style.top = (parseInt(cloneObj.style.top)+10)+"px";
+		else
+			newDiv.style.top = cloneObj.style.top;
+
+		newDiv.style.height = cloneObj.style.height;
+		
+		resetBoxPercentages( newDiv );	
+		newDiv.inuse = true;
+		if( boxLabelsCurrentlyVisible )
+			setLabelVisibilityOnBox(newDiv, true )		
+		setBoxAsApplied(newDivID);
+		setBoxAsCurrent(newDivID);
+
+		currentIDNum++;
+
+		stateChange();
+		
+	}
+}
+
+//On a mousedown event when a box is drawn
+function prepareBoxDraw(evt){
+	//Except if the shift key is down which indicates user is trying to select
+	if(!event.shiftKey){
+		if( selectedCategory != "" ){
+			let catRowNum = getBoxCategoryRowNum( selectedCategory );
+			if(catRowNum >= 0){	
+				deselectCurrentBox();
+				let divID = "box"+currentIDNum;
+				current_div = divID
+				createStyleDiv(category_meta_data[catRowNum].colour, selectedCategory, divID)
+				let mainImg = document.getElementById("theimage");
+				mainImg.onmouseup = stopBox;
+				currentIDNum++;
+				startBox(evt);	//Start drawing the box
+			}
+		}
+	}
+}
+
+//Highlight the specified category. Passing undefined just deselects all catgeories
+function highlightCategoryInList(catname){
+	
+	let catTableRows = document.getElementById("categorytable").rows
+	for(let i=0;i<catTableRows.length;i++){
+			catTableRows[i].cells[0].style.backgroundColor = "transparent";	
+	}
+	selectedCategory = "";
+
+	if(catname != undefined && catname != ""){
+		let catRowNum = getBoxCategoryRowNum( catname );
+		if(catRowNum >= 0){
+			catTableRows[catRowNum].cells[0].style.backgroundColor = "lightblue";
+			selectedCategory = catname;
+		}
+	}
+
+
+}
+
+//Rescale the user drawn boxes if the parent window is resized
+function rescaleAllBoxes(){
+
+	let mainImg = document.getElementById("theimage");
+
+	let new_image_width = mainImg.width;
+	let new_image_height = mainImg.height;
+
+	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
+	for(let i = 0; i < boxes.length; i++) {
+		if(boxes[i].inuse == true){
+			boxes[i].style.left = ""+((Math.round((new_image_width-1) * boxes[i].curBoxLeftPct))+mainImg.offsetLeft)+"px";
+			boxes[i].style.width = ""+Math.round((new_image_width) * boxes[i].curBoxWidthPct)+"px";
+			boxes[i].style.top = ""+((Math.round((new_image_height-1) * boxes[i].curBoxTopPct))+mainImg.offsetTop)+"px";
+			boxes[i].style.height = ""+Math.round((new_image_height) * boxes[i].curBoxHeightPct)+"px";
+		}
+
+	}
+
+}
+
+//True if boxes should be clickable
+function enableDisableBoxClicks( enabled ){
+
+	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
+	for(let i = 0; i < boxes.length; i++) {
+		if(boxes[i].inuse == true){
+			if(enabled){
+				boxes[i].style.pointerEvents = "auto";
+			}else{
+				boxes[i].style.pointerEvents = "none";
+			}
+		}
+	}
+}
+
+function syncCategoryListMain(){
+	ipcRenderer.send('app:SyncListedCategoryMetadata', category_meta_data );
+}
+
+function getFullLabellingState(){
+	let output = {}
+
+	let box_list = []
+
+	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
+	let mainImg =  document.getElementById("theimage");
+
+	output["image_width"] = mainImg.naturalWidth;
+	output["image_height"] = mainImg.naturalHeight;
+
+	for(let i = 0; i < boxes.length; i++) {
+		if(boxes[i].inuse == true){
+			box_list.push( 
+				{
+					"leftPct" :   boxes[i].curBoxLeftPct,
+					"widthPct" : boxes[i].curBoxWidthPct,
+					"topPct" : boxes[i].curBoxTopPct,
+					"heightPct" : boxes[i].curBoxHeightPct,
+					"label" : boxes[i].boxlabel,
+				} 
+			)
+		}
+	}
+
+	output.box_list = box_list;
+	
+	return output;
+}
+
+//Rescale the image if the user resizes the containing window
+function rescaleImageAndRepaint(){
+	let winWidth = window.innerWidth;
+	let winHeight = window.innerHeight;
+	let borderWidth = 8;
+	
+	let imgDiv = document.getElementById("imageDiv");
+	let menuDiv = document.getElementById("menuColumn");
+	let columnHeading = document.getElementById("columnHeading");
+	let catScroll = document.getElementById("catScroll");
+	var bodyStyle = window.getComputedStyle(document.body);
+	let borderMargin = parseInt(bodyStyle.margin);
+
+	let scrollBarWidth = imgDiv.offsetHeight - imgDiv.clientHeight;
+
+	imgDiv.style.maxHeight = (winHeight - scrollBarWidth)+"px";
+	imgDiv.style.height = (winHeight - scrollBarWidth)+"px";
+	imgDiv.style.maxWidth = (winWidth - 250)+"px";
+	imgDiv.style.width = (winWidth - 250)+"px";
+
+	menuDiv.style.height = (winHeight - menuDiv.offsetTop - borderMargin ) +"px"
+	menuDiv.style.maxHeight = (winHeight - menuDiv.offsetTop - borderMargin ) +"px"
+
+	catScrollHeight = (menuDiv.offsetHeight - columnHeading.offsetHeight);
+	catScroll.style.height = catScrollHeight+"px";
+
+	rezoomBasedOnState();
+
+	rescaleAllBoxes();
+}
+
+function nextImage(){
+	if(!lockSwitchImage){
+		lockSwitchImage = true;
+		ipcRenderer.send('app:preserveState', { "command": "nextImage", "labelling_state": getFullLabellingState() } );
+	}
+}
+
+function prevImage(){
+	if(!lockSwitchImage){
+		lockSwitchImage = true;
+		ipcRenderer.send('app:preserveState', { "command": "prevImage", "labelling_state": getFullLabellingState() } );
+	}
+}
+
+function saveToDisk(quit=false){
+	let command = "save";
+	if(quit)
+		command = "saveAndQuit";
+	syncCategoryListMain();			
+	ipcRenderer.send('app:preserveState', { "command": command, "labelling_state": getFullLabellingState() } );
+}
+
+function stateChange(){
+	ipcRenderer.send('app:needsSave');
+}
+
+//Clear from the table the list of boxes that have been drawn
+function clearAppliedLabels(){
+	let table = document.getElementById("appliedLabelsTable");
+
+	while(table.rows.length > 0)
+		table.deleteRow(0);
+	
+	appliedLabelsList = [];
+	
+}
+
+function clearAllLabellingState(){
+	
+	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
+
+	while(boxes.length > 0){
+		boxes[0].remove();
+	}
+
+
+}
+
+function restoreLabellingState(labelling_state){
+	let boxes = document.getElementById("imageDiv");
+	
+	for(let i = 0; i < labelling_state.box_list.length; i++) {
+
+		let cat_num = getBoxCategoryRowNum( labelling_state.box_list[i].label );
+		let colour = "red"		
+		if( cat_num >= 0 )
+			colour = category_meta_data[cat_num].colour
+
+		let divID = "box"+currentIDNum;
+		currentIDNum++;
+		div = createStyleDiv(colour, labelling_state.box_list[i].label, divID, false);
+
+		div.curBoxLeftPct = labelling_state.box_list[i].leftPct;
+		div.curBoxWidthPct = labelling_state.box_list[i].widthPct;
+		div.curBoxTopPct = labelling_state.box_list[i].topPct;
+		div.curBoxHeightPct = labelling_state.box_list[i].heightPct;
+
+		div.style.visibility = "visible";
+		div.inuse = true;
+		
+		if( boxLabelsCurrentlyVisible )
+			setLabelVisibilityOnBox( div, true );
+		else
+			setLabelVisibilityOnBox( div, false );
+
+		setBoxAsApplied( divID );
+	}
+
+	rescaleAllBoxes();
+	lockSwitchImage = false;
+
+}	
+
+function rezoomBasedOnState(){
+	switch(zoomState){
+		case "fitToWindow":
+			zoomToFit();
+			break;
+		case "originalSize":
+			zoomToNatural();
+			break;
+		case "stickyZoom":
+			//Do nothing
+			break;
+	}
+}
+
+//zoom image a specific percentage
+function zoomImage(pct){
+	let mainImg = document.getElementById("theimage");
+	let newWidth = mainImg.width * pct;
+
+	mainImg.style.width = newWidth+"px";
+	rescaleAllBoxes();	
+}
+
+//Zoom to the original size of the image
+function zoomToNatural(){
+	let mainImg = document.getElementById("theimage");
+	let newWidth = mainImg.naturalWidth;
+
+	mainImg.style.width = newWidth+"px";
+	rescaleAllBoxes();
+}
+
+//Zoom to the original size of the image
+function zoomToFit(){
+
+	//Maintain consistent margins - usually an 8px margin around the body border
+	var style = window.getComputedStyle(document.body);
+	let borderMargin = parseInt(style.margin);
+
+	let imgDiv = document.getElementById("imageDiv");
+	let mainImg = document.getElementById("theimage");
+	let imgWidth = mainImg.naturalWidth;
+	let imgHeight = mainImg.naturalHeight;
+	let divWidth = imgDiv.clientWidth - borderMargin;
+	let divHeight = imgDiv.clientHeight - borderMargin;
+
+	if( imgHeight > 0 && imgWidth > 0 ){
+		let widthScale = divWidth / imgWidth;
+		let heightScale = divHeight / imgHeight;
+
+		if( widthScale < heightScale )
+			mainImg.style.width = ( widthScale * imgWidth )+"px";
+		else
+			mainImg.style.width = ( heightScale * imgWidth )+"px";
+	}
+
+	
+	rescaleAllBoxes();
+}
+
+//Nudge the last box drawn by one pixel in any direction
+function nudgeBox(direction){
+
+	if( current_div != undefined && current_div != "" ){
+		let box = document.getElementById(current_div);
+		let mainImg = document.getElementById("theimage");
+		let imgDiv = document.getElementById("imageDiv");
+		if(box != undefined){
+			if(box.inuse){
+				let newTop, newHeight, newLeft, newWidth;
+				switch( direction ){
+					case "up":
+						newTop = parseInt(box.style.top)-1;
+						if( newTop >= mainImg.offsetTop )
+							box.style.top = newTop+"px";
+						break;
+					case "down":
+						newTop = parseInt(box.style.top)+1;
+						if( (newTop + parseInt(box.style.height)) < ( mainImg.offsetTop + mainImg.height )  )
+							box.style.top = newTop+"px";
+						break;
+					case "left":
+						newLeft = parseInt(box.style.left)-1;
+						if(newLeft >= mainImg.offsetLeft)
+							box.style.left = newLeft+"px";
+						break;
+					case "right":
+						newLeft = parseInt(box.style.left)+1;
+						if(newLeft + parseInt(box.style.width) < ( mainImg.offsetLeft+mainImg.width )) 
+							box.style.left = newLeft+"px";
+						break;		
+					case "right-left":
+						newWidth = parseInt(box.style.width)-1;
+						if(newWidth >= 1)
+							box.style.width = newWidth+"px";
+						break;
+					case "right-right":
+						newWidth = parseInt(box.style.width)+1;
+						if(newWidth + parseInt(box.style.left) < ( mainImg.offsetLeft+mainImg.width ))
+							box.style.width = newWidth+"px";
+						break;
+					case "bottom-up":
+						newHeight = parseInt(box.style.height)-1;
+						if(newHeight >= 1)
+							box.style.height = newHeight+"px";
+						break;
+					case "bottom-down":
+						newHeight = parseInt(box.style.height)+1;
+						if( (newHeight + parseInt(box.style.top)) < ( mainImg.offsetTop + mainImg.height ))
+							box.style.height = newHeight+"px";
+						break;
+				}				
+				resetBoxPercentages( box );
+				stateChange();
+			}
+		}
+	}
+
+}
+
+
+//Handler to receive mesages from main instructing switching to the next image to be marked up 
+ipcRenderer.on('labeller:switchImage', (event, arg) => {
+	clearAllLabellingState();
+	clearAppliedLabels();
+	let mainImg = document.getElementById("theimage");
+	mainImg.src = arg.image_url
+	//Redraw boxes once the image loads. The once option removes the event handler once it's fired
+	mainImg.addEventListener( 'load', function() { rescaleImageAndRepaint(); restoreLabellingState( arg.labelling_state ) }, { once: true } );
+	current_div = "";
+	let counter = document.getElementById("imageCounter");
+	counter.innerHTML=""+(arg.file_num+1)+"/"+arg.num_files
+	
+})
+
+//Receive messages about menu options chosen by the user
+ipcRenderer.on('labeller:menuZoomIn', (event, arg) => { zoomImage(1.1); });
+ipcRenderer.on('labeller:menuZoomOut', (event, arg) => { zoomImage(0.9); });
+ipcRenderer.on('labeller:menuFitToWindow', (event, arg) => { zoomState="fitToWindow"; zoomToFit(); });
+ipcRenderer.on('labeller:menuOriginalSize', (event, arg) => { zoomState="originalSize"; zoomToNatural(); });
+ipcRenderer.on('labeller:menuStickyZoom', (event, arg) => { zoomState="stickyZoom"; });
+ipcRenderer.on('labeller:deleteBoxesByCategory', (event, arg) => { showDeleteBoxesByCategoryForm(); });
+ipcRenderer.on('labeller:renameBoxCategory', (event, arg) => { showRenameCategoryForm(); });
+ipcRenderer.on('labeller:save', (event, arg) => { saveToDisk(false); });
+ipcRenderer.on('labeller:saveAndQuit', (event, arg) => { saveToDisk(true); });
+ipcRenderer.on('labeller:newBoxCategory', (event, arg) => { showAddCategoryForm(); });
+ipcRenderer.on('labeller:duplicateSelectedBox', (event, arg) => { duplicateSelectedBox(); });
+ipcRenderer.on('labeller:inialiseBoxCategoryList', (event, arg) => { inialiseBoxCategoryList(arg); });
+ipcRenderer.on('labeller:appendAllBoxCategories', (event, arg) => { appendAllBoxCategories(arg); });
+ipcRenderer.on('labeller:hideShowLabels', (event, arg) => { hideShowLabels(); });
+
+//Handler for hot keys. When key get a keydown event in the window this is called
+function decodeKeyPressDown(event){
+	if( hotKeysEnabled ){
+		//Avoid clashing with menus
+		if( (!event.ctrlKey) && (!event.metaKey) ){
+			if(event.shiftKey)
+				enableDisableBoxClicks(true);
+	
+			switch(event.code){
+				//Box nudge feature
+				case "ArrowUp": event.preventDefault(); if(event.shiftKey){ nudgeBox("bottom-up"); } else{nudgeBox("up");} break;
+				case "ArrowLeft": event.preventDefault(); if(event.shiftKey){ nudgeBox("right-left"); } else{nudgeBox("left");} break; 
+				case "ArrowRight": event.preventDefault(); if(event.shiftKey){ nudgeBox("right-right"); } else{nudgeBox("right");} break; 
+				case "ArrowDown": event.preventDefault(); if(event.shiftKey){ nudgeBox("bottom-down"); } else{nudgeBox("down");} break; 
+
+				case "Numpad6": nextImage(); break; 
+				case "Numpad4": prevImage(); break; 
+				case "Numpad8": zoomImage(1.1); break;
+				case "Numpad5": zoomImage(0.9); break;
+
+				case "Backspace":
+				case "Delete":
+					deleteBox( current_div );
+					break;
+
+				//Handle hotkeys for category selection
+				default:
+					let catnum = getHotKeyBoxCategoryRowNum(String.fromCharCode(event.keyCode));
+					if( catnum != -1 ){
+						highlightCategoryInList(  category_meta_data[catnum].name ) ;
+					}	
+			}
+		}
+	}
+}
+
+function decodeKeyPressUp(event){
+	//If the shift key was released then
+	if(event.key == "Shift"){
+		enableDisableBoxClicks(false);
+		clickSelectionIterator = 0;
+	}
+}
+
+//When the window is resized, scale the image with it and redraw the boxes at the new scale
+window.onresize = rescaleImageAndRepaint;
+//Capture hotkey presses
+window.onkeydown = decodeKeyPressDown;
+window.onkeyup = decodeKeyPressUp;
+//Capture mouseups outside of the image area
+window.onmouseup = wholeWindowMouseUpHandler;
+document.getElementById("theimage").onmousedown = prepareBoxDraw;
+
+
+</SCRIPT>
+
+</body>
+
+</html>
