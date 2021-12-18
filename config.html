@@ -58,9 +58,14 @@
 		
 		<div id="startLabellingDiv" class="formSectionUnhighlighted">
 			<div id="addNewImagesQuestion" hidden="true">
-				<input type="checkbox" id="appendNewImagesCheckbox" checked>Include new images in labelling sesion</input>
-				<br/><br/>
+				<input type="checkbox" id="appendNewImagesCheckbox" checked>Include new images</input>
+				
 			</div>
+			<div id="excludeMissingImagesQuestion" hidden="true">
+				<input type="checkbox" id="excludeMissingImagesCheckbox">Exclude missing images</input>
+				
+			</div>
+			<br/><br/>
 			<button type="button" disabled="true" id="startButton" onclick="done();">Start Labelling</button>
 		</div>
 
@@ -88,7 +93,9 @@
 			document.getElementById("dirDiv").style.backgroundColor="transparent";
 			document.getElementById("jsonFileDiv").style.backgroundColor="transparent";
 			document.getElementById("addNewImagesQuestion").hidden = true;
+			document.getElementById("excludeMissingImagesQuestion").hidden = true;
 			document.getElementById("appendNewImagesCheckbox").checked = true;
+			document.getElementById("excludeMissingImagesCheckbox").checked = false;
 		}
 
 		function startNewFile(){
@@ -117,9 +124,13 @@
 
 		function done(){
 			let includeNewImages = true;
-			if(!useNewLabellingFile)
+			let excludeMissingImages = false;
+			if(!useNewLabellingFile){
 				includeNewImages = document.getElementById("appendNewImagesCheckbox").checked
-			ipcRenderer.send('app:configDone', { "includeNewImages": includeNewImages });
+				excludeMissingImages = document.getElementById("excludeMissingImagesCheckbox").checked
+			}
+
+			ipcRenderer.send('app:configDone', { "includeNewImages": includeNewImages, "excludeMissingImages": excludeMissingImages });
 		}
 
 		function validateImageFiles(){
@@ -184,11 +195,14 @@
 
 				if( arg.missing_images == 0 ){
 					images_missing_ok_icon = "<font color=\"green\">&#10003;</font>";
-				}
+					document.getElementById("excludeMissingImagesQuestion").hidden = true;
+				}else
+					document.getElementById("excludeMissingImagesQuestion").hidden = false;
 
 				let newImages = arg.dir_total_images - arg.images_found - arg.missing_images;
 				if(newImages < 1){
 					new_images_ok_icon = "<font color=\"green\">&#10003;</font>";
+					document.getElementById("addNewImagesQuestion").hidden = true;
 				}else{
 					document.getElementById("addNewImagesQuestion").hidden = false;
 				}

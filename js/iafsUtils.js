@@ -106,14 +106,21 @@ function getAllImages( base_path ){
 	for(i=0;i<file_listing.length;i++){
 		let relative_fpath = file_listing[i];
 		let absolute_url = 'file://'+path.join( base_path, relative_fpath );  
-		output_list.push( { 
-			"path": relative_fpath, 
-			"image_url": absolute_url, 
-			"labelling_state" : { "box_list" : []  }
-		} );
+		output_list.push( generateEmptyFileObject( base_path, relative_fpath ) );
 	}
 
 	return output_list;
+}
+
+function generateEmptyFileObject( base_path, relative_fpath ){
+	let absolute_url = 'file://'+path.join( base_path, relative_fpath )
+	
+	let obj = { 
+			"path": relative_fpath, 
+			"image_url": absolute_url, 
+			"labelling_state" : { "box_list" : []  }
+		  }
+	return obj;
 }
 
 function initialise_labelled_state(base_path, labelling_state){
@@ -139,8 +146,14 @@ function initialise_labelled_state(base_path, labelling_state){
 						all_image_files[ file_name_dict[ labelling_state.labels[i].image_path ] ].labelling_state['image_height'] = labelling_state.labels[i].image_height;
 					}
 
-				}else
+				}else{
 					images_from_labelling_missing_from_collection++;
+					let relative_fpath = labelling_state.labels[i].image_path;
+					let newObj = generateEmptyFileObject( base_path, relative_fpath );
+					newObj.labelling_state = labelling_state.labels[i];
+					newObj["missing"] = true;
+					all_image_files.push( newObj );
+				}
 			}
 
 

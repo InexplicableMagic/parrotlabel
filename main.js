@@ -118,12 +118,7 @@ function createConfigWindow() {
 }
 
 app.on('ready',function(){
-
 	createConfigWindow();
-	
-	/*createLabellerWindow()
-	mainWindow.webContents.send('labeller:switchImage', file_list[cur_image] );*/
-	
 });
 
 ipcMain.on('app:configDone', (event, arg) => {
@@ -131,6 +126,11 @@ ipcMain.on('app:configDone', (event, arg) => {
 	if( "includeNewImages" in arg ){
 		if( arg.includeNewImages == false )
 			removeUnreferencedImages();
+	}
+
+	if( "excludeMissingImages" in arg ){
+		if( arg.excludeMissingImages == true )
+			removeMissingImages();
 	}
 
 	mainWindow.close();
@@ -142,6 +142,14 @@ ipcMain.on('app:configDone', (event, arg) => {
 function removeUnreferencedImages(){
 	for(let i = file_list.length-1; i>=0;i--){
 		if( !("referenced" in file_list[i]) )
+			file_list.splice(i,1);
+	}
+}
+
+function removeMissingImages(){
+	console.log("here");
+	for(let i = file_list.length-1; i>=0;i--){
+		if( "missing" in file_list[i] )
 			file_list.splice(i,1);
 	}
 }
@@ -185,6 +193,16 @@ function incrementImage(direction){
 function switchImage(imageNumber){
 	file_list[imageNumber].file_num = imageNumber;
 	file_list[imageNumber].num_files = file_list.length;
+	
+	//Test if the image is available just before loading in case the file system state has changed
+	let imgPath = path.join( base_image_directory, file_list[imageNumber].path );
+	if( !iafsUtils.isFileReadable( imgPath ) ){
+		file_list[imageNumber]["missing"] = true;
+	}else{
+		if( "missing" in file_list[imageNumber] )
+			delete file_list[imageNumber].missing;
+	}
+
 	mainWindow.webContents.send('labeller:switchImage', file_list[imageNumber] );
 }
 
