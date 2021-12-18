@@ -10,8 +10,6 @@ const {
 } = require('worker_threads');
 
 
-
-
 let mainWindow;
 var saveFileName = "";
 var needsSave = false;	//If the state has changed and a save is needed
@@ -61,6 +59,8 @@ function createLabellerWindow() {
 	{
 	  label: 'Edit',
 	  submenu: [
+		{label:'Remove Current Image', click() { removeCurrentImage(); }, accelerator: 'CmdOrCtrl+R' },
+		{type: 'separator' },
 		{label:'Duplicate Selected Box', click() { mainWindow.webContents.send("labeller:duplicateSelectedBox");  }, accelerator: 'CmdOrCtrl+D' },
 		{label:'Delete Boxes by Category...', click(){ mainWindow.webContents.send("labeller:deleteBoxesByCategory"); } },
 		{type: 'separator' },
@@ -178,7 +178,18 @@ ipcMain.on('app:preserveState', (event, arg) => {
 
 //Cause the labelling window to switch to the next image
 
-
+function removeCurrentImage(){
+	if (file_list.length >= 2){
+		let response = dialog.showMessageBoxSync( { "message": "Remove current image from session (does not delete image file)?", "buttons": [ "Yes", "No" ], "defaultId": 1   }  )
+		if( response == 0 ){
+			file_list.splice(cur_image,1);
+			if( cur_image >= file_list.length )
+				cur_image = file_list.length - 1;
+			switchImage( cur_image )
+		}
+	}else
+		dialog.showMessageBoxSync( { "message": "Cannot remove image from a set where only one image exists.", "buttons": [ "OK" ] } );
+}
 
 function incrementImage(direction){
 	cur_image+=direction;
@@ -413,8 +424,6 @@ function initialiseLabellingStateDone(message){
 			cur_image = pathIndex;			
 	}
 
-	console.dir( file_list );
-
 	mainWindow.webContents.send( 'config:fileMetadataResponse', all_images_labelled.meta_data );
 	
 }
@@ -496,19 +505,6 @@ ipcMain.on('app:SyncListedCategoryMetadata', (event, arg) => {
 });
 
 
-
-
-function convertPctToAbsolutePixels( imgWidth, imgHeight, box_list ){
-	output = []
-	
-	for(let i=0;i<box_list.length;i++){
-		
-	}
-
-	return output;
-
-}
-
 function checkSaveOnExit(){
 
 	if(needsSave){
@@ -523,6 +519,7 @@ function checkSaveOnExit(){
 		
 }
 
+//locate an exact (relative) path within the set of files being labelled
 function findExactFilePath(fpath){
 	if(fpath == undefined || fpath == "")
 		return -1;

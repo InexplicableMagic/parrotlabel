@@ -4,7 +4,7 @@ var fs = require('fs');
 //If a file has an extension typical of an image file
 function hasImageExtension( filePath ){
 
-	const valid_image_exts = [ ".jpg", ".jpeg", ".gif", ".png" ];
+	const valid_image_exts = [ ".jpg", ".jpeg", ".gif", ".png", ".webp" ];
 
 	let extname = path.extname( filePath );
 	if( extname == "" )
