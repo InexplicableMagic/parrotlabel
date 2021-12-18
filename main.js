@@ -41,7 +41,7 @@ function createLabellerWindow() {
 	    },
 	}) 
 	mainWindow.loadURL(url.format ({ 
-	pathname: path.join(__dirname, 'labeller.html'), 
+	pathname: path.join(__dirname, 'html/labeller.html'), 
 	protocol: 'file:', 
 	slashes: true
 	})) 
@@ -111,7 +111,7 @@ function createConfigWindow() {
 	    },
 	}) 
    mainWindow.loadURL(url.format ({ 
-      pathname: path.join(__dirname, 'config.html'), 
+      pathname: path.join(__dirname, 'html/config.html'), 
       protocol: 'file:', 
       slashes: true
    })) 
@@ -147,7 +147,6 @@ function removeUnreferencedImages(){
 }
 
 function removeMissingImages(){
-	console.log("here");
 	for(let i = file_list.length-1; i>=0;i--){
 		if( "missing" in file_list[i] )
 			file_list.splice(i,1);

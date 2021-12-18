@@ -1366,14 +1366,14 @@ ipcRenderer.on('labeller:switchImage', (event, arg) => {
 	//If the image is known to be missing - replace with a placeholder image
 	if( "missing" in arg ){
 		if(arg.missing)
-			mainImg.src = "img/missing_image_placeholder.png";
+			mainImg.src = "../img/missing_image_placeholder.png";
 	}else{
 		mainImg.src = arg.image_url
 	}
 	//Redraw boxes once the image loads. The once option removes the event handler once it's fired
 	mainImg.addEventListener( 'load', function() { rescaleImageAndRepaint(); restoreLabellingState( arg.labelling_state ) }, { once: true } );
 	//If the image is corrupt replace with the placeholder image
-	mainImg.addEventListener( 'error', function() { mainImg.src = "img/missing_image_placeholder.png"; }, { once: true } );
+	mainImg.addEventListener( 'error', function() { mainImg.src = "../img/missing_image_placeholder.png"; }, { once: true } );
 	current_div = "";
 	let counter = document.getElementById("imageCounter");
 	counter.innerHTML=""+(arg.file_num+1)+"/"+arg.num_files
