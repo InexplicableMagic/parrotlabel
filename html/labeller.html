@@ -203,8 +203,8 @@
 <!-- When the user deletes a category -->
 <div id="deleteCategoryForm" class="modalForm2">
 	<fieldset id="deleteCategoryRadioChoices">
-		<input type="radio" name="choiceset1" checked id="onlyDeleteCategory">Remove category name only<br>
-		<input type="radio" name="choiceset1" id="deleteBoxesAllImages">Also delete boxes on <font color="red">ALL</font> images with this category</input><br>
+		<input type="radio" name="choiceset1" checked id="onlyDeleteCategory">Remove category name only</input><br/>
+		<input type="radio" name="choiceset1" id="deleteBoxesAllImages">Also delete boxes on <font color="red">ALL</font> images with this category</input><br/>
 	</fieldset><br/>
 	<button type="button" onclick="handleDeleteCategoryForm();">Delete</button>
 	<button type="button" onclick="hideDeleteCategoryForm();">Cancel</button>
@@ -215,8 +215,8 @@
 	<label for="deleteBoxesByCatListOfCats">Select category:</label>
 	<select name="Category" id="deleteBoxesByCatListOfCats"></select><br/><br/>
 	<fieldset id="deleteBoxByCategoryRadioChoices">
-		<input type="radio" name="choiceset2" id="deleteBoxesByCatThisImage">Delete boxes on this image only with this category<br>
-		<input type="radio" name="choiceset2" id="deleteBoxesByCatAllImages">Delete boxes on ALL images with this category <font color="red">&#9888;</font><br>
+		<input type="radio" name="choiceset2" id="deleteBoxesByCatThisImage">Delete boxes on this image only with this category</input><br/>
+		<input type="radio" name="choiceset2" id="deleteBoxesByCatAllImages">Delete boxes on ALL images with this category <font color="red">&#9888;</font></input><br/>
 	</fieldset><br/>
 	<button type="button" onclick="handleDeleteBoxesByCategoryForm();">Delete</button>
 	<button type="button" onclick="hideDeleteBoxesByCategoryForm();">Cancel</button>
@@ -230,6 +230,20 @@
 	<input type="text" id="renameBoxCategoryNewCategory" placeholder="New Category Name"><br>
 	<button type="button" onclick="handleRenameBoxCategoryForm();">Rename</button>
 	<button type="button" onclick="hideRenameBoxCategoryForm();">Cancel</button>
+</div>
+
+<!-- Export -->
+<div id="exportDiv" class="modalForm2">
+	<fieldset>
+		<input type="radio" onclick="" name="format" checked value="startnew">Pascal VOC (XML)</input><br/>
+		<input type="radio" onclick="" name="format" value="useexisting">CSV</input>
+	</fieldset>
+	<div id="pascalVOCFormatDiv">
+		<p>Pascal VOC Export</p>
+		<button id="pascalExportDirButton" type="button" onclick="javascript:setPascalExportDir();">Browse</button><span id="pascalDIR"></span><br><br>
+		<button id="doPascalVOCExportButton" type="button" onclick="javascript:doPascalVOCExport();">Do Export</button>
+	</div>
+	<button id="cancelExportButton" type="button" onclick="javascript:closeExportDialogue();">Cancel</button>
 </div>
 
 <SCRIPT>
@@ -514,6 +528,7 @@ function addCategorySubmit(){
 		addCategoryCancel();
 		stateChange();
 		syncCategoryListMain();
+		resetAllBoxColours();
 	}
 	
 }
@@ -1027,6 +1042,15 @@ function changeBoxLabelName(divID, newLabel){
 	
 }
 
+function resetAllBoxColours(){
+	for(let i=0;i<appliedLabelsList.length;i++){
+		let divObj = document.getElementById(appliedLabelsList[i]);
+		let catColour = getCategoryColour( divObj.boxlabel );
+		if( catColour != "")
+			divObj.style.borderColor = catColour;
+	}
+}
+
 function duplicateSelectedBox(){
 	if(current_div != ""){
 		let mainImg = document.getElementById("theimage");
@@ -1443,6 +1467,7 @@ ipcRenderer.on('labeller:duplicateSelectedBox', (event, arg) => { duplicateSelec
 ipcRenderer.on('labeller:inialiseBoxCategoryList', (event, arg) => { inialiseBoxCategoryList(arg); });
 ipcRenderer.on('labeller:appendAllBoxCategories', (event, arg) => { appendAllBoxCategories(arg); });
 ipcRenderer.on('labeller:hideShowLabels', (event, arg) => { hideShowLabels(); });
+ipcRenderer.on('labeller:menuExport', (event, arg) => { showExportDiv(); });
 
 //Handler for hot keys. When key get a keydown event in the window this is called
 function decodeKeyPressDown(event){
@@ -1509,8 +1534,8 @@ window.onkeyup = decodeKeyPressUp;
 window.onmouseup = wholeWindowMouseUpHandler;
 document.getElementById("theimage").onmousedown = prepareBoxDraw;
 
-
 </SCRIPT>
+<script src="../js/export_ui.js" ></script>
 
 </body>
 

@@ -4,13 +4,15 @@ const path = require('path')
 var fs = require('fs');
 const util = require('util')
 const iafsUtils = require ('./js/iafsUtils.js')
+const pvoc = require ('./js/pascalVOCExport.js')
 
 const {
   Worker, isMainThread, parentPort, workerData
 } = require('worker_threads');
 
 
-let mainWindow;
+var mainWindow;
+var exportWindow;
 var saveFileName = "";
 var needsSave = false;	//If the state has changed and a save is needed
 //A unique value to identify this format not likely to collide with any other app
@@ -40,7 +42,7 @@ function createLabellerWindow() {
 	}) 
 	mainWindow.loadURL(url.format ({ 
 	pathname: path.join(__dirname, 'html/labeller.html'), 
-	protocol: 'file:', 
+	protocol: 'file:',
 	slashes: true
 	})) 
 
@@ -52,6 +54,9 @@ function createLabellerWindow() {
 		{type: 'separator' },
 		{label:'Save', click() {  saveMenu(); },accelerator: 'CmdOrCtrl+S' },
 		{label:'Save As...', click() {  saveMenu(true); } },
+		{label:'Export...', click() {  mainWindow.webContents.send("labeller:menuExport") } },
+		//{label:'Export...', click() {  pvoc.pascalVOCExport( "export_test", file_list ); } }, //bypass dialogue for testing
+		
 		{type: 'separator' },
 		{label:'Exit', click() { checkSaveOnExit(); } }
 	  ]
@@ -219,7 +224,7 @@ function switchImage(imageNumber){
 
 //Generic menthod to pop-up a directory selection dialogue and return the user selection
 //Does not allow files to be selected
-ipcMain.on('app:getImagesDir', (event, arg) => {
+ipcMain.on('app:getDirSelection', (event, arg) => {
 
 	let options = { properties: ['openDirectory']  } 
 
@@ -593,16 +598,25 @@ function save( filename=saveFileName ){
 	const data = JSON.stringify(o);
 	fs.writeFileSync( filename , data, 'utf8', (err) => {
 	    	if (err) {
-			console.log('Error writing file: ${err}');
-		    } else {
-			console.log('File is written successfully!');
-	    	}
+			dialog.showMessageBoxSync( { "message": "Error saving: "+err, "buttons": [ "OK" ] } );
+		}
+	    	
 	});
 
 	needsSave = false;
 
 	
 }
+
+ipcMain.on('app:pascalVOCExport', (event, arg) => {
+	let result = pvoc.pascalVOCExport( arg.dir, file_list );
+	if( "error" in result ){
+		dialog.showMessageBoxSync( { "message": "Error exporting: "+result.error, "buttons": [ "OK" ] } );
+	}
+});
+
+
+
 
 
 

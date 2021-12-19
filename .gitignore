@@ -1,6 +1,7 @@
 #Dir
 images/
 testjson/
+export_test/
 
 # Logs
 logs

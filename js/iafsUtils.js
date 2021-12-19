@@ -32,6 +32,21 @@ function directoryIsReadable(dir){
 	return true;
 }
 
+function directoryIsWritable(dir){
+	
+	if( ! fs.existsSync(dir) )
+		return false;
+	try{ 
+		fs.accessSync(dir, fs.constants.W_OK );
+	}catch(err){
+		return false;
+	}
+	if( ! fs.statSync(dir).isDirectory()){
+		return false;
+	}
+	return true;
+}
+
 function isFileReadable(file){
 	
 	if( file===undefined || file == "" )
@@ -174,4 +189,4 @@ function initialise_labelled_state(base_path, labelling_state){
 }
 
 
-module.exports = { initialise_labelled_state, hasImageExtension, getAllImages, getAllImagesInDirSubGen, directoryIsReadable, isFileReadable, fileExists }
+module.exports = { initialise_labelled_state, hasImageExtension, getAllImages, getAllImagesInDirSubGen, directoryIsReadable, directoryIsWritable, isFileReadable, fileExists }
