@@ -75,14 +75,26 @@ function createLabellerWindow() {
 	  ]
 	},
 	{
+	  label: 'Navigate',
+	  submenu: [
+		{label:'Next', click() { incrementImage(1); }, accelerator: 'CmdOrCtrl+Right' },
+		{label:'Prev', click() { incrementImage(-1); }, accelerator: 'CmdOrCtrl+Left' },
+		{label:'Next Unlabelled', click() { switchNextImageNoBoxes(1); }, accelerator: 'CmdOrCtrl+N' },
+		{label:'Prev Unlabelled', click() { switchNextImageNoBoxes(-1); }, accelerator: 'CmdOrCtrl+P' },
+		{label:'First Image', click() { switchImage(0); } },
+		{label:'Last Image', click() { switchImage( file_list.length -1 ); } },
+		
+	  ]
+	},
+	{
 	  label: 'View',
 	  submenu: [
 		{label:'Fit To Window', click(){ mainWindow.webContents.send("labeller:menuFitToWindow");},accelerator: 'CmdOrCtrl+W'},
 		{label:'Original Size', click(){ mainWindow.webContents.send("labeller:menuOriginalSize");},accelerator: 'CmdOrCtrl+O' },
 		{label:'Fixed Width', click(){ mainWindow.webContents.send("labeller:menuStickyZoom"); },accelerator: 'CmdOrCtrl+M'},
 		{type: 'separator' },
-		{label:'Zoom In', click(){ mainWindow.webContents.send("labeller:menuZoomIn"); },accelerator: 'CmdOrCtrl+='  },
-		{label:'Zoom Out', click(){ mainWindow.webContents.send("labeller:menuZoomOut"); },accelerator: 'CmdOrCtrl+-'},
+		{label:'Zoom In', click(){ mainWindow.webContents.send("labeller:menuZoomIn"); },accelerator: 'CmdOrCtrl+Up'  },
+		{label:'Zoom Out', click(){ mainWindow.webContents.send("labeller:menuZoomOut"); },accelerator: 'CmdOrCtrl+Down'},
 		{type: 'separator' },
 		{label:'Hide/Show Labels', click(){ mainWindow.webContents.send("labeller:hideShowLabels"); },accelerator: 'CmdOrCtrl+L'},
 	  ]
@@ -140,7 +152,6 @@ ipcMain.on('app:configDone', (event, arg) => {
 
 	mainWindow.close();
 	createLabellerWindow();
-	
 
 });
 
@@ -220,6 +231,40 @@ function switchImage(imageNumber){
 
 	mainWindow.webContents.send('labeller:switchImage', file_list[imageNumber] );
 }
+
+function switchNextImageNoBoxes(direction){
+	let nextImage = getNextImageNoBoxes(direction);
+	if( nextImage >= 0 ){
+		cur_image = nextImage
+		switchImage( cur_image );
+	}else
+		dialog.showMessageBoxSync( { "message": "All images have box labels.", "buttons": [ "OK" ] } );
+}
+
+function getNextImageNoBoxes(direction){
+	let i = cur_image;
+	let tested = 0;
+	while(tested <  file_list.length){
+		if(direction > 0){
+			i++;
+			if( i >= file_list.length )
+				i = 0;
+		}else{
+			i--;
+			if( i < 0)
+				i = file_list.length - 1;
+		}
+
+		if( file_list[i].labelling_state.box_list != undefined ){
+			if( file_list[i].labelling_state.box_list.length < 1 )
+				return i;
+		}
+		tested++;
+		
+	}
+
+	return -1;
+}	
 
 
 //Generic menthod to pop-up a directory selection dialogue and return the user selection
