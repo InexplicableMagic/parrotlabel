@@ -69,7 +69,7 @@ function createLabellerWindow() {
 		{label:'Duplicate Selected Box', click() { mainWindow.webContents.send("labeller:duplicateSelectedBox");  }, accelerator: 'CmdOrCtrl+D' },
 		{label:'Delete Boxes by Category...', click(){ mainWindow.webContents.send("labeller:deleteBoxesByCategory"); } },
 		{type: 'separator' },
-		{label:'New Box Category...', click() { mainWindow.webContents.send("labeller:newBoxCategory");  }, accelerator: 'CmdOrCtrl+G' },
+		{label:'New Box Category...', click() { mainWindow.webContents.send("labeller:newBoxCategory");  }, accelerator: 'CmdOrCtrl+T' },
 		{label:'Rename Box Category...', click(){ mainWindow.webContents.send("labeller:renameBoxCategory"); } },
 		{label:'Repopulate All Missing Box Categories', click() { mainWindow.webContents.send("labeller:appendAllBoxCategories", getAllBoxCategories() );  } },
 	  ]
@@ -379,8 +379,13 @@ ipcMain.on('app:testDirectoryReadable', (event, arg) => {
 //Set the validated loaded labelling data globally to avoid reloading it
 function setLabellingLoadedFromFile( loaded_labelling ){
 	loaded_labelling_file_content = loaded_labelling
-	
 }
+
+//Restart with a new session
+ipcMain.on('app:resetLoadedLabellingFile', (event, arg) => {
+	loaded_labelling_file_content = undefined;
+	file_list = [];
+});
 
 function setbaseImageDirectory( base_dir ){
 	base_image_directory = base_dir;
@@ -453,7 +458,8 @@ ipcMain.on('app:initialiseLabellingState', (event, arg) => {
 		parentPort.once('message',processMessage );  
 	`, { eval: true }
 	);
-	worker.on('message',initialiseLabellingStateDone);  
+	worker.on('message',initialiseLabellingStateDone);
+
 	worker.postMessage({ "base_image_directory": base_image_directory, "labelling_state": loaded_labelling_file_content });  
 	
 });
@@ -473,6 +479,8 @@ function initialiseLabellingStateDone(message){
 		if(pathIndex >= 0)
 			cur_image = pathIndex;			
 	}
+
+	console.log( all_images_labelled.meta_data );
 
 	mainWindow.webContents.send( 'config:fileMetadataResponse', all_images_labelled.meta_data );
 	

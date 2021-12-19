@@ -8,12 +8,21 @@
 			.formSectionUnhighlighted {
 				background-color: white;
 				padding: 10px;
+				margin: 20px;
+				border-radius: 25px;
+				border-width: 2px;
+				border-color: lightgrey;
+				border-style: solid;
 				
 			}
 
 			.formSectionHighlighted {
 				background-color: lightgrey;
-				padding: 10px;				
+				padding: 10px;
+				border: 2px solid #73AD21;
+				border-radius: 25px;
+				border-width: 2px;
+				margin: 20px;
 			}
 
 			table {
@@ -25,6 +34,14 @@
 				border: 1px solid black;
 			}
 
+			.fileInputArea {
+				border: 1px dashed #000000;
+				height:20px;
+				min-width: 400px;
+				display: inline-block;
+				padding: 2px;
+			}
+
 		</style>
 
 
@@ -32,40 +49,35 @@
 	</head>
 	<body>
 		<div class="formSectionUnhighlighted" id="chooseSessionType">
-			<fieldset>
-				<input type="radio" onclick="javascript:startNewFile();" name="nextexisting" checked value="startnew">Start new session<br>
-				<input type="radio" onclick="javascript:useExistingFile();" name="nextexisting" value="useexisting">Use existing annotations file<br>
-			</fieldset>
+			
+		<input type="radio" onclick="javascript:startNewFile();" name="nextexisting" checked value="startnew">Start new session<br>
+		<input type="radio" onclick="javascript:useExistingFile();" name="nextexisting" value="useexisting">Use existing annotations file<br>
+			
 		</div>
 		<div id="jsonFileDiv" hidden="true" class="formSectionUnhighlighted">
 			<h3>Set Annotations File</h3>
-			<button type="button" id="browseJSONFile" onclick="javascript:browseExistingJSONFile();">Browse</button>   <span id="labellingfile"></span>
+			<button type="button" id="browseJSONFile" onclick="javascript:browseExistingJSONFile();">Browse</button>  <span class="fileInputArea" id="labellingfile">/path/to/existing_annotations_file</span>
 			<p id="jsonfiletatefeedback"></p>
 		</div>
 
 		<div id="dirDiv" class="formSectionHighlighted">
 			<h3>Set Images Directory</h3>
-			<button id="imageDirButton" type="button" onclick="javascript:browseImageDir();">Browse</button><span id="imagedir"></span>
+			<button id="imageDirButton" type="button" onclick="javascript:browseImageDir();">Browse</button>  <span class="fileInputArea" id="imagedir">/path/to/images/</span>
 			<p id="imagesdirstatefeedback"></p>
 		</div>
 		<div id="validateImagesDiv" class="formSectionUnhighlighted" >
-			<h3>Validate Images Exist</h3>
+			<h3>Verify Images Exist</h3>
 			<button id="validateImagesButton" disabled="true" type="button" onclick="javascript:validateImageFiles();">Validate Images</button> 
 			<br/><br/>
 			<div id="dirstats"></div>		
-		</div>
-		<br/>
-		
+		</div>		
 		<div id="startLabellingDiv" class="formSectionUnhighlighted">
 			<div id="addNewImagesQuestion" hidden="true">
-				<input type="checkbox" id="appendNewImagesCheckbox" checked>Include new images</input>
-				
+				<input type="checkbox" id="appendNewImagesCheckbox" checked>Include new images</input><br/>
 			</div>
 			<div id="excludeMissingImagesQuestion" hidden="true">
-				<input type="checkbox" id="excludeMissingImagesCheckbox">Exclude missing images</input>
-				
+				<input type="checkbox" id="excludeMissingImagesCheckbox">Exclude missing images</input><br/>
 			</div>
-			<br/><br/>
 			<button type="button" disabled="true" id="startButton" onclick="done();">Start Labelling</button>
 		</div>
 
@@ -82,16 +94,17 @@
 			document.getElementById("jsonFileDiv").hidden = true;
 			document.getElementById("imageDirButton").disabled = true;
 			document.getElementById("startButton").disabled = true;
-			document.getElementById("imagedir").innerHTML = "";
+			document.getElementById("imagedir").innerHTML = "/path/to/images/";
+			document.getElementById("labellingfile").innerHTML = "/path/to/existing_annotations_file";
 			document.getElementById("dirstats").innerHTML = "";
 			document.getElementById("jsonfiletatefeedback").innerHTML = "";
 			document.getElementById("imagesdirstatefeedback").innerHTML = "";
-			document.getElementById("dirDiv").style.backgroundColor="transparent";
-			document.getElementById("validateImagesDiv").style.backgroundColor="transparent";
+			document.getElementById("dirDiv").className="formSectionUnhighlighted";
+			document.getElementById("validateImagesDiv").className="formSectionUnhighlighted";
 			document.getElementById("validateImagesButton").disabled = true;
-			document.getElementById("startLabellingDiv").style.backgroundColor="transparent";
-			document.getElementById("dirDiv").style.backgroundColor="transparent";
-			document.getElementById("jsonFileDiv").style.backgroundColor="transparent";
+			document.getElementById("startLabellingDiv").className="formSectionUnhighlighted";
+			document.getElementById("dirDiv").className="formSectionUnhighlighted";
+			document.getElementById("jsonFileDiv").className="formSectionUnhighlighted";
 			document.getElementById("addNewImagesQuestion").hidden = true;
 			document.getElementById("excludeMissingImagesQuestion").hidden = true;
 			document.getElementById("appendNewImagesCheckbox").checked = true;
@@ -102,18 +115,19 @@
 			resetFormElements();
 			useNewLabellingFile = true;
 
-			document.getElementById("dirDiv").style.backgroundColor="lightgrey";
+			document.getElementById("dirDiv").className="formSectionHighlighted";
 			document.getElementById("imageDirButton").disabled = false;
 			validImagesDirectory = false;
 			labellingFileValid = false;
 			lastValidDirectory = "";
 			existingLabellingFile = ""
+			ipcRenderer.send('app:resetLoadedLabellingFile');
 		}
 
 		function useExistingFile(){
 			resetFormElements();
 			useNewLabellingFile = false;
-			document.getElementById("jsonFileDiv").style.backgroundColor="lightgrey";
+			document.getElementById("jsonFileDiv").className="formSectionHighlighted";
 			document.getElementById("jsonFileDiv").hidden = false;
 			validImagesDirectory = false;
 			labellingFileValid = false;
@@ -199,7 +213,7 @@
 				}else
 					document.getElementById("excludeMissingImagesQuestion").hidden = false;
 
-				let newImages = arg.dir_total_images - arg.images_found - arg.missing_images;
+				let newImages = arg.dir_total_images - arg.images_found;
 				if(newImages < 1){
 					new_images_ok_icon = "<font color=\"green\">&#10003;</font>";
 					document.getElementById("addNewImagesQuestion").hidden = true;
@@ -217,8 +231,8 @@
 			statsObj.innerHTML = table;
 			if( dir_total_images_OK_state && images_found_ok_state ){
 				document.getElementById("startButton").disabled = false;
-				document.getElementById("validateImagesDiv").style.backgroundColor="transparent";
-				document.getElementById("startLabellingDiv").style.backgroundColor="lightgrey";
+				document.getElementById("validateImagesDiv").className="formSectionUnhighlighted";
+				document.getElementById("startLabellingDiv").className="formSectionHighlighted";
 			}else
 				document.getElementById("startButton").disabled = true;
 		});
@@ -250,8 +264,8 @@
 				lastValidDirectory = arg.dir;
 				setBaseImageDirectoryInApp( lastValidDirectory );
 				validImagesDirectory = true;
-				document.getElementById("dirDiv").style.backgroundColor="transparent";
-				document.getElementById("validateImagesDiv").style.backgroundColor="lightgrey";
+				document.getElementById("dirDiv").className="formSectionUnhighlighted";
+				document.getElementById("validateImagesDiv").className="formSectionHighlighted";
 				document.getElementById("validateImagesButton").disabled = false;
 				//Auto validate the images when the user has set the directory manually
 				if(useNewLabellingFile)
@@ -271,8 +285,8 @@
 					dir_path.innerHTML = lastValidDirectory;
 					labellingFileValid = true;
 					document.getElementById("imageDirButton").disabled = false;
-					document.getElementById("jsonFileDiv").style.backgroundColor="transparent";
-					document.getElementById("dirDiv").style.backgroundColor="lightgrey";
+					document.getElementById("jsonFileDiv").className="formSectionUnhighlighted";
+					document.getElementById("dirDiv").className="formSectionHighlighted";
 					testIfImagesDirExists();
 				}
 				

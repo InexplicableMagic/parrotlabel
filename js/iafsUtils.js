@@ -140,6 +140,9 @@ function generateEmptyFileObject( base_path, relative_fpath ){
 
 function initialise_labelled_state(base_path, labelling_state){
 	let all_image_files = getAllImages( base_path );
+
+	let number_of_files_in_images_directory = all_image_files.length;
+
 	let file_name_dict = {};
 
 	
@@ -173,7 +176,7 @@ function initialise_labelled_state(base_path, labelling_state){
 
 
 
-			return { "meta_data": {	"dir_total_images": all_image_files.length,
+			return { "meta_data": {	"dir_total_images": number_of_files_in_images_directory,
 				 		"images_found" : images_from_labelling_file_in_collection, 
 				 		"missing_images": images_from_labelling_missing_from_collection }, 
 				 "file_list": all_image_files
@@ -181,7 +184,7 @@ function initialise_labelled_state(base_path, labelling_state){
 
 		}else{
 			//New labelling file
-			return { "meta_data": {	"dir_total_images": all_image_files.length },
+			return { "meta_data": {	"dir_total_images": number_of_files_in_images_directory },
 				 "file_list": all_image_files
 			};		
 
