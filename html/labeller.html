@@ -55,6 +55,8 @@
 		border-width: 1px;
 		border-style: solid;
 		border-color: #000000;
+		user-select: none;
+		user-drag: none;
 	}
 
 	/* Wastebasket icon style for deleting categories */
@@ -115,6 +117,7 @@
 		height: 500px;
 		position: relative;
 		text-align: center;
+		user-drag: none;
 	}
 
 	/* Prev and next buttons */
@@ -164,7 +167,7 @@
    <body>
 
 <div class="row">
-	<div class="column" id="imageDiv" >
+	<div draggable="false" class="column" id="imageDiv">
 		<img class="imgscale" draggable="false" id="theimage" src="" />
 	</div>
 	<!-- Right hand columns list of categories and tags -->
@@ -252,6 +255,9 @@ var boxLabelsCurrentlyVisible = true;	//User has selected to show box labels
 var modalCurrentlyOnScreen = false;	//Is a dialogue currently on screen
 
 var lockSwitchImage = false;	//Lock-out commands that switch image until the labelling state has been fully restored
+
+var isShiftDown = false;
+var isAltDown = false;
 
 //List all the box categories currently on the current image
 function getBoxCategoriesOnScreen(includeUnused){
@@ -577,27 +583,14 @@ function renameBoxCategoryGlobally(fromName, toName, newHotKey=""){
 		}
 	}
 
-	//Change the labels on any boxes drawn and currently being displayed
+	//Change the labels of boxes currently on screen
 	for(let i=0;i<appliedLabelsList.length;i++){
-		let divObj = document.getElementById(appliedLabelsList[i])
-		let childNodes = divObj.childNodes;
-		for(let j=0;j<childNodes.length;j++){
-			if(childNodes[j].className == "boxLabel"){	
-				if( childNodes[j].innerHTML == fromName)
-					childNodes[j].innerHTML = toName;
-			}
-		}
-		if( divObj.boxlabel == fromName )
-			divObj.boxlabel = toName;
+		let divObj = document.getElementById(appliedLabelsList[i]);
+		if( divObj.boxlabel ==  fromName)
+			replaceBoxCategory( appliedLabelsList[i],  toName);
 	}
 
-	//Change the label in the applied labels table
-	let appliedLabelsTable = document.getElementById("appliedLabelsTable");
-	for(let i=0;i<appliedLabelsTable.rows.length;i++){
-		if( appliedLabelsTable.rows[i].cells[0].innerHTML == fromName )
-			appliedLabelsTable.rows[i].cells[0].innerHTML = toName;
-	}
-
+	//Change the labels of boxes on other images
 	ipcRenderer.send('app:RenameBoxCategoryGlobally', {"fromLabel": fromName, "toLabel": toName } );	
 	
 }
@@ -640,6 +633,15 @@ function getHotKeyBoxCategoryRowNum(hotkeyChar){
 		}
 	}); 
 	return num;
+}
+
+//Return the current colour of a specific category name
+function getCategoryColour( catname ){
+	for(const cat of category_meta_data){
+		if( cat.name == catname )
+			return cat.colour;
+	}
+	return "";
 }
 
 //Get a new colour name
@@ -786,13 +788,16 @@ function stopBox (evt) {
 		if( (parseInt(r.style.left)+parseInt(r.style.width)) >= (mainImg.offsetLeft + mainImg.width) )
 			r.style.width = ((mainImg.offsetLeft + mainImg.width-1) - parseInt(r.style.left))+"px";
 
-		resetBoxPercentages( r );	
-		r.inuse = true;
-		if( boxLabelsCurrentlyVisible )
-			setLabelVisibilityOnBox( r, true )		
-		
+		//Prevent accidential creation of tiny boxes with a click
+		if( parseInt(r.style.height) > 3 || parseInt(r.style.width) > 3  ){
+			resetBoxPercentages( r );	
+			r.inuse = true;
+			if( boxLabelsCurrentlyVisible )
+				setLabelVisibilityOnBox( r, true )		
+			setBoxAsApplied(current_div);
+		}else
+			r.style.visibility = "hidden";
 
-		setBoxAsApplied(current_div);
 		currentlyDrawingBox = false;
 	}
 }
@@ -923,6 +928,7 @@ function deleteBox( divID ){
 	}
 }
 
+
 //Allow selection of overlapping divs on shift-click
 function smartSelect(evt){
 	
@@ -960,10 +966,19 @@ function smartSelect(evt){
 			return 0;
 		});
 
-		if( clickSelectionIterator >= divsInClickZone.length)
-			clickSelectionIterator = 0;
-		setBoxAsCurrent(divsInClickZone[clickSelectionIterator]);
-		clickSelectionIterator++;
+		//Change selection on shift click
+		if(isShiftDown){
+			if( clickSelectionIterator >= divsInClickZone.length)
+				clickSelectionIterator = 0;
+			setBoxAsCurrent(divsInClickZone[clickSelectionIterator]);
+			clickSelectionIterator++;
+		}
+		//Change box category on click with Alt key
+		if(isAltDown){
+			if( divsInClickZone.length > 0 )
+				if(selectedCategory!= undefined && selectedCategory != "")
+					replaceBoxCategory( divsInClickZone[0], selectedCategory )
+		}
 	}
 	
 }
@@ -977,6 +992,39 @@ function setBoxAsCurrent(divID){
 	current_div = divID;
 	let divObj = document.getElementById(divID);
 	divObj.style.borderStyle="dashed";
+}
+
+function replaceBoxCategory(divID, newCategory){
+	let divObj = document.getElementById(divID);
+	divObj.boxlabel = newCategory;	
+
+	//Change the box label name
+	changeBoxLabelName( divID, newCategory );
+	changeLabelInAppliedLabelList( divID, newCategory );
+
+	//Change the colour of the box to the right category colour
+	let newColour = getCategoryColour( newCategory );
+	if( newColour != "")
+		divObj.style.borderColor = newColour;
+
+}
+
+function changeLabelInAppliedLabelList(divID, newLabel){
+	let rowNumAppliedList = findDivObjectInAppliedLabels( divID );
+	if( rowNumAppliedList >= 0 ){
+		let appliedLabelsTable = document.getElementById("appliedLabelsTable");
+		appliedLabelsTable.rows[rowNumAppliedList].cells[0].innerHTML = newLabel;
+	}
+}
+
+function changeBoxLabelName(divID, newLabel){
+	let divObj = document.getElementById(divID);
+	let childNodes = divObj.childNodes;
+	for(let i=0;i<childNodes.length;i++){
+		if(childNodes[i].className == "boxLabel")
+			childNodes[i].innerHTML = newLabel;
+	}
+	
 }
 
 function duplicateSelectedBox(){
@@ -1156,14 +1204,14 @@ function rescaleImageAndRepaint(){
 
 function nextImage(){
 	if(!lockSwitchImage){
-		lockSwitchImage = true;
+		lockSwitchImage = true;	//Don't allow another switch image until the last one was completed
 		ipcRenderer.send('app:preserveState', { "command": "nextImage", "labelling_state": getFullLabellingState() } );
 	}
 }
 
 function prevImage(){
 	if(!lockSwitchImage){
-		lockSwitchImage = true;
+		lockSwitchImage = true; //Don't allow another switch image until the last one was completed
 		ipcRenderer.send('app:preserveState', { "command": "prevImage", "labelling_state": getFullLabellingState() } );
 	}
 }
@@ -1401,8 +1449,14 @@ function decodeKeyPressDown(event){
 	if( hotKeysEnabled ){
 		//Avoid clashing with menus
 		if( (!event.ctrlKey) && (!event.metaKey) ){
-			if(event.shiftKey)
+			if(event.shiftKey){
 				enableDisableBoxClicks(true);
+				isShiftDown = true;
+			}
+			if(event.code=="AltRight"){
+				enableDisableBoxClicks(true);
+				isAltDown = true;
+			}
 	
 			switch(event.code){
 				//Box nudge feature
@@ -1434,9 +1488,15 @@ function decodeKeyPressDown(event){
 
 function decodeKeyPressUp(event){
 	//If the shift key was released then
-	if(event.key == "Shift"){
+	if(event.key == "Shift" && !isAltDown){
 		enableDisableBoxClicks(false);
 		clickSelectionIterator = 0;
+		isShiftDown = false;
+	}
+
+	if(event.key == "Alt" && !isShiftDown){
+		enableDisableBoxClicks(false);
+		isAltDown = false;
 	}
 }
 
