@@ -96,7 +96,8 @@ function createLabellerWindow() {
 		{label:'Zoom In', click(){ mainWindow.webContents.send("labeller:menuZoomIn"); },accelerator: 'CmdOrCtrl+Up'  },
 		{label:'Zoom Out', click(){ mainWindow.webContents.send("labeller:menuZoomOut"); },accelerator: 'CmdOrCtrl+Down'},
 		{type: 'separator' },
-		{label:'Show/Hide Labels', click(){ mainWindow.webContents.send("labeller:hideShowLabels"); },accelerator: 'CmdOrCtrl+L'},
+		{label:'Show/Hide Box Labels', click(){ mainWindow.webContents.send("labeller:hideShowLabels"); },accelerator: 'CmdOrCtrl+L'},
+		{label:'Show/Hide Boxes', click(){ mainWindow.webContents.send("labeller:hideShowBoxes"); },accelerator: 'CmdOrCtrl+B'},
 		{type: 'separator' },
 		{label:'Show/Hide Image Path', click(){ mainWindow.webContents.send("labeller:showImagePaths"); },accelerator: 'CmdOrCtrl+I'},
 	  ]
@@ -390,6 +391,14 @@ ipcMain.on('app:testDirectoryReadable', (event, arg) => {
 		event.reply(arg.replyto, {"readable": true, "dir" : arg.dir } );
 	}else{
 		event.reply(arg.replyto, {"readable": false, "dir" : arg.dir } );
+	}
+});
+
+ipcMain.on('app:testDirectoryWritable', (event, arg) => {
+	if( iafsUtils.directoryIsWritable( arg.dir ) ){
+		event.reply(arg.replyto, {"writable": true, "dir" : arg.dir } );
+	}else{
+		event.reply(arg.replyto, {"writable": false, "dir" : arg.dir } );
 	}
 });
 

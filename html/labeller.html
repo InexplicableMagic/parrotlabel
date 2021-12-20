@@ -276,10 +276,11 @@
 		<p>Set export directory for XML file set:</p>
 		<button id="pascalExportDirButton" type="button" onclick="javascript:setPascalExportDir();">Browse</button>
 		<span class="fileInputArea modalFormDivSpacing" id="pascalDIR"></span><br><br>
+		<span id="pascalExportDirFeedback"></span>
 	</div>
 	<div class="modalFormDivSpacing justifiedEven">
 		<button id="cancelExportButton" type="button" onclick="javascript:closeExportDialogue();">Cancel</button>
-		<button id="doExportButton" type="button" onclick="javascript:handleExportDialogue();">Do Export</button>
+		<button id="doExportButton" type="button" disabled="true" onclick="javascript:handleExportDialogue();">Do Export</button>
 	</div>
 </div>
 
@@ -308,6 +309,7 @@ var zoomState = "fitToWindow"	//Default way to display the image
 
 var clickSelectionIterator = 0;	//Cycling through different box selections
 var boxLabelsCurrentlyVisible = true;	//User has selected to show box labels
+var boxesHidden = false;	//Are the boxes currently hidden
 var modalCurrentlyOnScreen = false;	//Is a dialogue currently on screen
 
 var lockSwitchImage = false;	//Lock-out commands that switch image until the labelling state has been fully restored
@@ -872,6 +874,17 @@ function setLabelVisibilityOnBox(boxDiv, visible){
 	}
 }
 
+function hideShowBoxByID( boxID, visible ){
+	let boxDiv = document.getElementById(boxID)
+	if(boxDiv != undefined){
+		setLabelVisibilityOnBox(boxDiv, visible);
+		if(visible)
+			boxDiv.style.visibility = "visible";
+		else
+			boxDiv.style.visibility = "hidden";
+	}
+}
+
 function resetBoxPercentages( boxDiv ){
 	let mainImg = document.getElementById("theimage");
 	imgWidth = mainImg.width;
@@ -1342,6 +1355,7 @@ function restoreLabellingState(labelling_state){
 		div.curBoxHeightPct = labelling_state.box_list[i].heightPct;
 
 		div.style.visibility = "visible";
+
 		div.inuse = true;
 		
 		if( boxLabelsCurrentlyVisible )
@@ -1354,6 +1368,8 @@ function restoreLabellingState(labelling_state){
 
 	rescaleAllBoxes();
 	lockSwitchImage = false;
+	boxesHidden = false;
+	
 
 }	
 
@@ -1521,13 +1537,29 @@ ipcRenderer.on('labeller:appendAllBoxCategories', (event, arg) => { appendAllBox
 ipcRenderer.on('labeller:hideShowLabels', (event, arg) => { hideShowLabels(); });
 ipcRenderer.on('labeller:menuExport', (event, arg) => { showExportDiv(); });
 ipcRenderer.on('labeller:showImagePaths', (event, arg) => { showHideImagePathDiv(); });
+ipcRenderer.on('labeller:hideShowBoxes', (event, arg) => { showHideBoxes(); });
 
 function showHideImagePathDiv(){
+
 	let pathDiv = document.getElementById("imagePathDiv");
 	if(pathDiv.style.visibility != "visible")
 		pathDiv.style.visibility = "visible";
 	else
 		pathDiv.style.visibility = "hidden";
+}
+
+function showHideBoxes(){
+	for(let divID of appliedLabelsList){
+		if( boxesHidden )
+			hideShowBoxByID( divID, true );
+		else
+			hideShowBoxByID( divID, false );
+	}
+
+	if(boxesHidden)
+		boxesHidden = false;
+	else
+		boxesHidden = true;
 }
 
 //Handler for hot keys. When key get a keydown event in the window this is called
