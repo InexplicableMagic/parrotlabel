@@ -19,6 +19,11 @@ ipcRenderer.on('export:setPascalExportPath', (event, arg) => {
 });
 
 
+function handleExportDialogue(){
+	if(document.getElementById("pascalVOCExportRadio").checked)
+		doPascalVOCExport();	
+}
+
 function doPascalVOCExport(){
 	let paths = document.getElementById("pascalDIR").innerHTML;
 	ipcRenderer.send('app:pascalVOCExport', {"dir": paths } );

@@ -24,14 +24,20 @@
 		position: absolute;
 		visibility: hidden;
 		display: inline-block;
-		left: 50px;
-		top: 50px;
+		left: 100px;
+		top: 100px;
 		border-width: 1px;
 		border-color: #000000;
 		border-style: solid;
 		background-color: white;
 		padding: 10px;
 		box-shadow: rgba(0, 0, 0, 0.36) 0px 5px 16px;
+	}
+
+	.modalFormDivSpacing {
+		padding-top: 10px;
+		padding-bottom: 10px;
+		
 	}
 
 	/* Initial image scaling */
@@ -146,6 +152,23 @@
 		cursor: pointer;
 	}
 
+	.justifiedEven {
+		display: flex;
+		justify-content: space-between;
+	}
+
+	.fileInputArea {
+		border: 1px dashed #000000;
+		min-height:20px;
+		min-width: 400px;
+		max-width: 500px;
+		display: inline-block;
+		padding: 2px;
+		word-wrap: break-word;
+		font-family: monospace;
+	}
+
+
   </style>
 
    </head>
@@ -162,7 +185,7 @@
 			<div align="center"><a title="Previous Image (Shortcut:Numpad 4)" class="buttonPrevNext" href="javascript:prevImage();">Prev</a><a title="Next Image (Shortcut:Numpad 6)" class="buttonPrevNext" href="javascript:nextImage();">Next</a></div>
 			<div align="center"><span id="imageCounter">0/0</span></div>
 			<div align="center"><a href="javascript:showAddCategoryForm();" class="addNewButton" >Add New Box Category</a></div>
-			<div><a class="deleteEditButton" href="javascript:showAddCategoryForm(true);">Edit Selected</a><a class="deleteEditButton" href="javascript:showDeleteCategoryForm();">Delete Selected</a></div>
+			<div class="justifiedEven"><a class="deleteEditButton" href="javascript:showAddCategoryForm(true);">Edit Selected</a><a class="deleteEditButton" href="javascript:showDeleteCategoryForm();">Delete Selected</a></div>
 		</div>
 		<div class="categoryScroll" id="catScroll" >
 			<table class="boxCategoryTable" id="categorytable"></table>
@@ -175,37 +198,45 @@
 <! -- Modal Forms -->
 <div id="newcatform" class="modalForm2">
 	<form onsubmit="return false;">
-		<input type="hidden" id="catModify" value="false" >
-		<label for="catname">New Category Name:</label><br>	
-		<input type="text" id="catname" name="catname" placeholder="Category Name"><br>
-		<label for="hotkey">HotKey:</label><br>
-		<input type="text" id="hotkey" name="hotkey" placeholder="a" maxlength="1" ><br>
-		<br/>		
-		<button type="submit" onclick="addCategorySubmit();">Add</button>
-		<button type="button" onclick="addCategoryCancel();">Cancel</button>
+		<div class="modalFormDivSpacing">
+			<input type="hidden" id="catModify" value="false" >
+			<label for="catname">New Category Name:</label><br>	
+			<input type="text" id="catname" name="catname" placeholder="Category Name"><br>
+			<label for="hotkey">HotKey:</label><br>
+			<input type="text" id="hotkey" name="hotkey" placeholder="a" maxlength="1" ><br>
+		</div>
+		<div class="modalFormDivSpacing justifiedEven">
+			<button type="button" onclick="addCategoryCancel();">Cancel</button>
+			<button type="submit" onclick="addCategorySubmit();">Done</button>
+		</div>
 		
 	</form>
 </div>
 <!-- When the user deletes a category -->
 <div id="deleteCategoryForm" class="modalForm2">
-	<fieldset id="deleteCategoryRadioChoices">
+	<div id="deleteCategoryRadioChoices">
 		<input type="radio" name="choiceset1" checked id="onlyDeleteCategory">Remove category name only</input><br/>
 		<input type="radio" name="choiceset1" id="deleteBoxesAllImages">Also delete boxes on <font color="red">ALL</font> images with this category</input><br/>
-	</fieldset><br/>
-	<button type="button" onclick="handleDeleteCategoryForm();">Delete</button>
-	<button type="button" onclick="hideDeleteCategoryForm();">Cancel</button>
+	<br/>
+	<div class="modalFormDivSpacing justifiedEven">
+		<button type="button" onclick="hideDeleteCategoryForm();">Cancel</button>
+		<button type="button" onclick="handleDeleteCategoryForm();">Delete</button>
+	</div>
 </div>
 
 <!-- Category delete chosen from the menu -->
 <div id="deleteBoxesByCategoryForm" class="modalForm2">
 	<label for="deleteBoxesByCatListOfCats">Select category:</label>
 	<select name="Category" id="deleteBoxesByCatListOfCats"></select><br/><br/>
-	<fieldset id="deleteBoxByCategoryRadioChoices">
+	<div id="deleteBoxByCategoryRadioChoices">
 		<input type="radio" name="choiceset2" id="deleteBoxesByCatThisImage">Delete boxes on this image only with this category</input><br/>
 		<input type="radio" name="choiceset2" id="deleteBoxesByCatAllImages">Delete boxes on ALL images with this category <font color="red">&#9888;</font></input><br/>
-	</fieldset><br/>
-	<button type="button" onclick="handleDeleteBoxesByCategoryForm();">Delete</button>
-	<button type="button" onclick="hideDeleteBoxesByCategoryForm();">Cancel</button>
+	</div>
+	<div class="modalFormDivSpacing justifiedEven">
+		<button type="button" onclick="hideDeleteBoxesByCategoryForm();">Cancel</button>
+		<button type="button" onclick="handleDeleteBoxesByCategoryForm();">Delete</button>
+	</div>
+
 </div>
 
 <!-- Rename a category that's not necessarily onscreen -->
@@ -213,26 +244,31 @@
 	<label for="renameBoxCategorySelectCategory">Select category:</label>
 	<select name="Category" id="renameBoxCategorySelectCategory"></select><br/><br/>
 	<label for="catname">New Category Name:</label><br>	
-	<input type="text" id="renameBoxCategoryNewCategory" placeholder="New Category Name"><br>
-	<button type="button" onclick="handleRenameBoxCategoryForm();">Rename</button>
-	<button type="button" onclick="hideRenameBoxCategoryForm();">Cancel</button>
+	<input type="text" id="renameBoxCategoryNewCategory" placeholder="New Category Name">
+	<div class="modalFormDivSpacing justifiedEven">
+		<button type="button" onclick="hideRenameBoxCategoryForm();">Cancel</button>
+		<button type="button" onclick="handleRenameBoxCategoryForm();">Rename</button>
+	</div>
 </div>
 
 <!-- Export -->
 <div id="exportDiv" class="modalForm2">
-	<fieldset>
-		<input type="radio" onclick="" name="format" checked value="startnew">Pascal VOC (XML)</input><br/>
-		<input type="radio" onclick="" name="format" value="useexisting">CSV</input>
-	</fieldset>
-	<div id="pascalVOCFormatDiv">
-		<p>Pascal VOC Export</p>
-		<button id="pascalExportDirButton" type="button" onclick="javascript:setPascalExportDir();">Browse</button><span id="pascalDIR"></span><br><br>
-		<button id="doPascalVOCExportButton" type="button" onclick="javascript:doPascalVOCExport();">Do Export</button>
+	<div class="modalFormDivSpacing">
+		<input type="radio" onclick="" name="chooseFormat" checked value="pascalVOC" id="pascalVOCExportRadio">Pascal VOC (XML)</input><br/>
+		<input type="radio" onclick="" name="chooseFormat" value="CSV">CSV</input>
 	</div>
-	<button id="cancelExportButton" type="button" onclick="javascript:closeExportDialogue();">Cancel</button>
+	<div id="pascalVOCFormatDiv" class="modalFormDivSpacing">
+		<p>Set export directory for XML file set:</p>
+		<button id="pascalExportDirButton" type="button" onclick="javascript:setPascalExportDir();">Browse</button>
+		<span class="fileInputArea modalFormDivSpacing" id="pascalDIR"></span><br><br>
+	</div>
+	<div class="modalFormDivSpacing justifiedEven">
+		<button id="cancelExportButton" type="button" onclick="javascript:closeExportDialogue();">Cancel</button>
+		<button id="doExportButton" type="button" onclick="javascript:handleExportDialogue();">Do Export</button>
+	</div>
 </div>
 
-<SCRIPT>
+<script>
 const electron = require("electron");
 const {ipcRenderer} = require('electron')
 
@@ -243,6 +279,7 @@ var lastAllocatedColour = 0;
 var current_div = ""		//The name of the currently selected box (or box about to be drawn not yet on the screen)
 var currentIDNum = 1		//Incrementing number used to name divs uniquely to represent the boxes
 var appliedLabelsList = []	//List of div IDs of boxes that have been drawn and are now on screen
+var currentImageMissing = false;//Was the file found for the current image
 
 var category_meta_data = []	//Names, hotkeys and colours of the user specified box categories currently listed
 var selectedCategory = "";	//Name of the currently selected category
@@ -506,6 +543,7 @@ function addCategorySubmit(){
 
 		if( isModify == false ){
 			addBoxCategory( catname, hotkey );
+			highlightCategoryInList( catname );
 		}else{
 			renameBoxCategoryGlobally( selectedCategory, catname, hotkey );
 		}
@@ -1159,8 +1197,13 @@ function getFullLabellingState(){
 	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
 	let mainImg =  document.getElementById("theimage");
 
-	output["image_width"] = mainImg.naturalWidth;
-	output["image_height"] = mainImg.naturalHeight;
+	//Don't report the size of the placeholder image for missing images as the actual image size
+	if(!currentImageMissing){
+		if( mainImg.naturalWidth > 0 && mainImg.naturalHeight > 0  ){
+			output["image_width"] = mainImg.naturalWidth;
+			output["image_height"] = mainImg.naturalHeight;
+		}
+	}
 
 	for(let i = 0; i < boxes.length; i++) {
 		if(boxes[i].inuse == true){
@@ -1420,18 +1463,21 @@ function nudgeBox(direction){
 ipcRenderer.on('labeller:switchImage', (event, arg) => {
 	clearAllLabellingState();
 	clearAppliedLabels();
+	currentImageMissing = false;
 	let mainImg = document.getElementById("theimage");
 	//If the image is known to be missing - replace with a placeholder image
 	if( "missing" in arg ){
-		if(arg.missing)
+		if(arg.missing){
 			mainImg.src = "../img/missing_image_placeholder.png";
+			currentImageMissing = true;
+		}
 	}else{
 		mainImg.src = arg.image_url
 	}
 	//Redraw boxes once the image loads. The once option removes the event handler once it's fired
 	mainImg.addEventListener( 'load', function() { rescaleImageAndRepaint(); restoreLabellingState( arg.labelling_state ) }, { once: true } );
 	//If the image is corrupt replace with the placeholder image
-	mainImg.addEventListener( 'error', function() { mainImg.src = "../img/missing_image_placeholder.png"; }, { once: true } );
+	mainImg.addEventListener( 'error', function() { currentImageMissing = true; mainImg.src = "../img/missing_image_placeholder.png"; }, { once: true } );
 	current_div = "";
 	let counter = document.getElementById("imageCounter");
 	counter.innerHTML=""+(arg.file_num+1)+"/"+arg.num_files
@@ -1520,7 +1566,7 @@ window.onkeyup = decodeKeyPressUp;
 window.onmouseup = wholeWindowMouseUpHandler;
 document.getElementById("theimage").onmousedown = prepareBoxDraw;
 
-</SCRIPT>
+</script>
 <script src="../js/export_ui.js" ></script>
 
 </body>

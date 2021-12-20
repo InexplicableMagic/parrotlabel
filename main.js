@@ -171,7 +171,19 @@ function removeMissingImages(){
 
 //Store the stae of the labelling on the current image
 ipcMain.on('app:preserveState', (event, arg) => {
+
 	let localLabellingState = arg.labelling_state
+
+	//If the image failed to load in this session but the image width and height was known from a previous session where the image did load then retain it
+	//Avoids losing the state on transient file system problems
+	if( (!("image_width" in localLabellingState)) && ("image_width" in file_list[cur_image].labelling_state) ){
+		if("image_height" in file_list[cur_image].labelling_state ){
+			localLabellingState["image_width"] = file_list[cur_image].labelling_state.image_width;
+			localLabellingState["image_height"] = file_list[cur_image].labelling_state.image_height;
+		}
+	}		
+
+
 	file_list[cur_image].labelling_state = localLabellingState;
 
 	switch(arg.command){
@@ -480,8 +492,6 @@ function initialiseLabellingStateDone(message){
 			cur_image = pathIndex;			
 	}
 
-	console.log( all_images_labelled.meta_data );
-
 	mainWindow.webContents.send( 'config:fileMetadataResponse', all_images_labelled.meta_data );
 	
 }
@@ -511,8 +521,9 @@ function getAllBoxCategories(currentlyOnScreen){
 	let all_categories = {}
 
 	if(currentlyOnScreen != undefined){
+		console.log( currentlyOnScreen );
 		for(let i=0;i<currentlyOnScreen.length;i++)
-			all_categories[ urrentlyOnScreen[i] ]=1;
+			all_categories[ currentlyOnScreen[i] ]=1;
 	}
 
 	for(let i=0;i<file_list.length;i++){
@@ -533,7 +544,7 @@ function getAllBoxCategories(currentlyOnScreen){
 }
 
 ipcMain.on('app:GetAllBoxCategories', (event, arg) => {
-	event.reply(arg.replyto, getAllBoxCategories() );
+	event.reply(arg.replyto, getAllBoxCategories(arg.currentlyOnScreen) );
 });
 
 ipcMain.on('app:RenameBoxCategoryGlobally', (event, arg) => {
