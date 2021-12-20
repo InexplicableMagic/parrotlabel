@@ -26,7 +26,7 @@ function handleExportDialogue(){
 
 function doPascalVOCExport(){
 	let paths = document.getElementById("pascalDIR").innerHTML;
-	ipcRenderer.send('app:pascalVOCExport', {"dir": paths } );
+	ipcRenderer.send('app:preserveState', { "command": "pascalVOCExport", "labelling_state": getFullLabellingState(), "dir": paths } );
 	closeExportDialogue();
 }
 

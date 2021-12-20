@@ -200,6 +200,9 @@ ipcMain.on('app:preserveState', (event, arg) => {
 			save();
 			mainWindow.close();
 			break;
+		case "pascalVOCExport":
+			doPascalVOCExport(arg.dir);
+			break;
 	}
 });
 
@@ -672,12 +675,12 @@ function save( filename=saveFileName ){
 	
 }
 
-ipcMain.on('app:pascalVOCExport', (event, arg) => {
-	let result = pvoc.pascalVOCExport( arg.dir, file_list );
+function doPascalVOCExport(dir) {
+	let result = pvoc.pascalVOCExport( dir, file_list );
 	if( "error" in result ){
 		dialog.showMessageBoxSync( { "message": "Error exporting: "+result.error, "buttons": [ "OK" ] } );
 	}
-});
+}
 
 
 
