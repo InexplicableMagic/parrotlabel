@@ -32,12 +32,28 @@
 		background-color: white;
 		padding: 10px;
 		box-shadow: rgba(0, 0, 0, 0.36) 0px 5px 16px;
+		z-index: 100;
 	}
 
 	.modalFormDivSpacing {
 		padding-top: 10px;
 		padding-bottom: 10px;
 		
+	}
+
+	.imagePathDivStyle {
+		position: absolute;
+		display: inline-block;
+		left: 20px;
+		top: 20px;
+		border-width: 1px;
+		border-color: #000000;
+		border-style: solid;
+		background-color: white;
+		padding: 10px;
+		box-shadow: rgba(0, 0, 0, 0.36) 0px 5px 16px;
+		z-index: 50;
+		visibility: hidden;
 	}
 
 	/* Initial image scaling */
@@ -174,7 +190,6 @@
    </head>
    
    <body>
-
 <div class="row">
 	<div draggable="false" class="column" id="imageDiv">
 		<img class="imgscale" draggable="false" id="theimage" src="" />
@@ -217,7 +232,7 @@
 	<div id="deleteCategoryRadioChoices">
 		<input type="radio" name="choiceset1" checked id="onlyDeleteCategory">Remove category name only</input><br/>
 		<input type="radio" name="choiceset1" id="deleteBoxesAllImages">Also delete boxes on <font color="red">ALL</font> images with this category</input><br/>
-	<br/>
+	</div>
 	<div class="modalFormDivSpacing justifiedEven">
 		<button type="button" onclick="hideDeleteCategoryForm();">Cancel</button>
 		<button type="button" onclick="handleDeleteCategoryForm();">Delete</button>
@@ -267,6 +282,10 @@
 		<button id="doExportButton" type="button" onclick="javascript:handleExportDialogue();">Do Export</button>
 	</div>
 </div>
+
+<!-- Image path display -->
+<div id="imagePathDiv" class="imagePathDivStyle"><span id="imagePathSpan">/path/to/file</span></div>
+
 
 <script>
 const electron = require("electron");
@@ -1481,6 +1500,7 @@ ipcRenderer.on('labeller:switchImage', (event, arg) => {
 	current_div = "";
 	let counter = document.getElementById("imageCounter");
 	counter.innerHTML=""+(arg.file_num+1)+"/"+arg.num_files
+	document.getElementById("imagePathSpan").innerHTML = arg.path;
 	
 })
 
@@ -1500,6 +1520,15 @@ ipcRenderer.on('labeller:inialiseBoxCategoryList', (event, arg) => { inialiseBox
 ipcRenderer.on('labeller:appendAllBoxCategories', (event, arg) => { appendAllBoxCategories(arg); });
 ipcRenderer.on('labeller:hideShowLabels', (event, arg) => { hideShowLabels(); });
 ipcRenderer.on('labeller:menuExport', (event, arg) => { showExportDiv(); });
+ipcRenderer.on('labeller:showImagePaths', (event, arg) => { showHideImagePathDiv(); });
+
+function showHideImagePathDiv(){
+	let pathDiv = document.getElementById("imagePathDiv");
+	if(pathDiv.style.visibility != "visible")
+		pathDiv.style.visibility = "visible";
+	else
+		pathDiv.style.visibility = "hidden";
+}
 
 //Handler for hot keys. When key get a keydown event in the window this is called
 function decodeKeyPressDown(event){

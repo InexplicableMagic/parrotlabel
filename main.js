@@ -96,7 +96,9 @@ function createLabellerWindow() {
 		{label:'Zoom In', click(){ mainWindow.webContents.send("labeller:menuZoomIn"); },accelerator: 'CmdOrCtrl+Up'  },
 		{label:'Zoom Out', click(){ mainWindow.webContents.send("labeller:menuZoomOut"); },accelerator: 'CmdOrCtrl+Down'},
 		{type: 'separator' },
-		{label:'Hide/Show Labels', click(){ mainWindow.webContents.send("labeller:hideShowLabels"); },accelerator: 'CmdOrCtrl+L'},
+		{label:'Show/Hide Labels', click(){ mainWindow.webContents.send("labeller:hideShowLabels"); },accelerator: 'CmdOrCtrl+L'},
+		{type: 'separator' },
+		{label:'Show/Hide Image Path', click(){ mainWindow.webContents.send("labeller:showImagePaths"); },accelerator: 'CmdOrCtrl+I'},
 	  ]
 	},
 	{
@@ -197,8 +199,8 @@ ipcMain.on('app:preserveState', (event, arg) => {
 			save();
 			break;
 		case "saveAndQuit":
-			save();
-			mainWindow.close();
+			if(save())
+				mainWindow.close();
 			break;
 		case "pascalVOCExport":
 			doPascalVOCExport(arg.dir);
@@ -524,7 +526,6 @@ function getAllBoxCategories(currentlyOnScreen){
 	let all_categories = {}
 
 	if(currentlyOnScreen != undefined){
-		console.log( currentlyOnScreen );
 		for(let i=0;i<currentlyOnScreen.length;i++)
 			all_categories[ currentlyOnScreen[i] ]=1;
 	}
@@ -666,12 +667,13 @@ function save( filename=saveFileName ){
 	fs.writeFileSync( filename , data, 'utf8', (err) => {
 	    	if (err) {
 			dialog.showMessageBoxSync( { "message": "Error saving: "+err, "buttons": [ "OK" ] } );
+			return false;
 		}
 	    	
 	});
 
 	needsSave = false;
-
+	return true;
 	
 }
 
