@@ -890,33 +890,13 @@ function resetBoxPercentages( boxDiv ){
 	imgWidth = mainImg.width;
 	imgHeight = mainImg.height
 
-	//Avoid divide by zero on bugs
-	if(imgWidth > 1 && imgHeight > 1){
-		boxDiv.curBoxLeftPct =  (parseInt(boxDiv.style.left)-mainImg.offsetLeft)/(mainImg.width-1);
+	//Avoid divide by zero bugs
+	if(imgWidth > 0 && imgHeight > 0){
+		boxDiv.curBoxLeftPct =  (parseInt(boxDiv.style.left)-mainImg.offsetLeft)/(mainImg.width);
 		boxDiv.curBoxWidthPct =  parseInt(boxDiv.style.width)/mainImg.width;
-		boxDiv.curBoxTopPct =  (parseInt(boxDiv.style.top)-mainImg.offsetTop)/(mainImg.height-1);
+		boxDiv.curBoxTopPct =  (parseInt(boxDiv.style.top)-mainImg.offsetTop)/(mainImg.height);
 		boxDiv.curBoxHeightPct =  parseInt(boxDiv.style.height)/mainImg.height;
 
-		//Defensive code for bugs elsewhere
-		if( boxDiv.curBoxLeftPct > 1 )
-			boxDiv.curBoxLeftPct = 1
-		if( boxDiv.curBoxLeftPct < 0 )
-			boxDiv.curBoxLeftPct = 0;
-
-		if( boxDiv.curBoxWidthPct > 1 )
-			boxDiv.curBoxWidthPct = 1
-		if( boxDiv.curBoxWidthPct < 0 )
-			boxDiv.curBoxWidthPct = 0;
-
-		if( boxDiv.curBoxTopPct > 1 )
-			boxDiv.curBoxTopPct = 1
-		if( boxDiv.curBoxTopPct < 0 )
-			boxDiv.curBoxTopPct = 0;
-
-		if( boxDiv.curBoxHeightPct > 1 )
-			boxDiv.curBoxHeightPct = 1
-		if( boxDiv.curBoxHeightPct < 0 )
-			boxDiv.curBoxHeightPct = 0;
 	}
 }
 
@@ -1192,10 +1172,26 @@ function rescaleAllBoxes(){
 	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
 	for(let i = 0; i < boxes.length; i++) {
 		if(boxes[i].inuse == true){
-			boxes[i].style.left = ""+((Math.round((new_image_width-1) * boxes[i].curBoxLeftPct))+mainImg.offsetLeft)+"px";
-			boxes[i].style.width = ""+Math.round((new_image_width) * boxes[i].curBoxWidthPct)+"px";
-			boxes[i].style.top = ""+((Math.round((new_image_height-1) * boxes[i].curBoxTopPct))+mainImg.offsetTop)+"px";
-			boxes[i].style.height = ""+Math.round((new_image_height) * boxes[i].curBoxHeightPct)+"px";
+			let left = Math.floor(new_image_width * boxes[i].curBoxLeftPct);
+			let top =  Math.floor(new_image_height * boxes[i].curBoxTopPct);
+
+			if(left >= new_image_width)
+				left = new_image_width - 1;
+			if(top >= new_image_height)
+				top = new_image_height - 1;
+
+			let width = Math.round( new_image_width * boxes[i].curBoxWidthPct );
+			let height = Math.round( new_image_height * boxes[i].curBoxHeightPct );
+
+			if(width > new_image_width)
+				width = new_image_width;
+			if(height > new_image_height)
+				height = new_image_height;
+
+			boxes[i].style.left = ""+(left+mainImg.offsetLeft)+"px";
+			boxes[i].style.width = ""+width+"px";
+			boxes[i].style.top = ""+(top+mainImg.offsetTop)+"px";
+			boxes[i].style.height = ""+height+"px";
 		}
 
 	}
@@ -1451,7 +1447,7 @@ function nudgeBox(direction){
 						break;
 					case "down":
 						newTop = parseInt(box.style.top)+1;
-						if( (newTop + parseInt(box.style.height)) < ( mainImg.offsetTop + mainImg.height )  )
+						if( (newTop + parseInt(box.style.height)) <= ( mainImg.offsetTop + mainImg.height )  )
 							box.style.top = newTop+"px";
 						break;
 					case "left":
@@ -1461,7 +1457,7 @@ function nudgeBox(direction){
 						break;
 					case "right":
 						newLeft = parseInt(box.style.left)+1;
-						if(newLeft + parseInt(box.style.width) < ( mainImg.offsetLeft+mainImg.width )) 
+						if(newLeft + parseInt(box.style.width) <= ( mainImg.offsetLeft+mainImg.width )) 
 							box.style.left = newLeft+"px";
 						break;		
 					case "right-left":
@@ -1471,7 +1467,7 @@ function nudgeBox(direction){
 						break;
 					case "right-right":
 						newWidth = parseInt(box.style.width)+1;
-						if(newWidth + parseInt(box.style.left) < ( mainImg.offsetLeft+mainImg.width ))
+						if(newWidth + parseInt(box.style.left) <= ( mainImg.offsetLeft+mainImg.width ))
 							box.style.width = newWidth+"px";
 						break;
 					case "bottom-up":
@@ -1481,7 +1477,7 @@ function nudgeBox(direction){
 						break;
 					case "bottom-down":
 						newHeight = parseInt(box.style.height)+1;
-						if( (newHeight + parseInt(box.style.top)) < ( mainImg.offsetTop + mainImg.height ))
+						if( (newHeight + parseInt(box.style.top)) <= ( mainImg.offsetTop + mainImg.height ))
 							box.style.height = newHeight+"px";
 						break;
 				}				

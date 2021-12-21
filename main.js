@@ -102,6 +102,14 @@ function createLabellerWindow() {
 		{label:'Show/Hide Image Path', click(){ mainWindow.webContents.send("labeller:showImagePaths"); },accelerator: 'CmdOrCtrl+I'},
 	  ]
 	},
+	,
+	{
+	  label: 'Help',
+	  submenu: [
+		{label:'Keyboard Shortcuts', click(){ helpWindow("keyboard-shortcuts.html"); }},
+	  ]
+	},
+
 	{
 	  label: 'Debug',
 	  submenu: [
@@ -119,11 +127,32 @@ function createLabellerWindow() {
 
 }
 
+function helpWindow(manual_page){
+	let helpWindow = new BrowserWindow(
+	{
+	width: 800, 
+	height: 900,
+	webPreferences: {
+		nodeIntegration: true,
+		contextIsolation: false,
+	      	enableRemoteModule: true,
+	    },
+	}) 
+	helpWindow.loadURL(url.format ({ 
+		pathname: path.join(__dirname, 'html/'+manual_page), 
+		protocol: 'file:', 
+		slashes: true
+	}));
+
+	helpWindow.removeMenu();
+}
+
+
 function createConfigWindow() { 
    mainWindow = new BrowserWindow(
 	{
 	width: 800, 
-	height: 800,
+	height: 900,
 	webPreferences: {
       		nodeIntegration: true,
       		contextIsolation: false,
