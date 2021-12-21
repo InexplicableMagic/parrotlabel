@@ -65,7 +65,7 @@
 		border-color: #000000;
 		user-select: none;
 		user-drag: none;
-		image-rendering: high-quality;
+		image-rendering: auto;
 	}
 
 	/* Wastebasket icon style for deleting categories */
@@ -317,6 +317,8 @@ var lockSwitchImage = false;	//Lock-out commands that switch image until the lab
 
 var isShiftDown = false;
 var isAltDown = false;
+var lastMouseX = 0;		//The coordinates on the image where the mouse was last pointing (used for zooming)
+var lastMouseY = 0;
 
 //List all the box categories currently on the current image
 function getBoxCategoriesOnScreen(includeUnused){
@@ -1419,12 +1421,31 @@ function rezoomBasedOnState(){
 	}
 }
 
+//When the mouse moves set where it is against the image
+function setLastMousePos(evt){
+	lastMouseX = evt.clientX;
+	lastMouseY = evt.clientY;
+}
+
 //zoom image a specific percentage
 function zoomImage(pct){
 	let mainImg = document.getElementById("theimage");
 	let newWidth = Math.floor(mainImg.width * pct);
 
+	let imgDiv = document.getElementById("imageDiv");
+
+	//Caculate where on the image the mouse was pointing
+	let offsetX = imgDiv.offsetLeft - imgDiv.scrollLeft;
+	let offsetY = imgDiv.offsetTop - imgDiv.scrollTop;
+	let leftPct = (lastMouseX - offsetX) / mainImg.width ;
+	let topPct = (lastMouseY - offsetY) / mainImg.height ;
+
 	mainImg.style.width = newWidth+"px";
+
+	//Auto scroll the window to try and keep where on the image the mouse was pointing in view
+	imgDiv.scrollLeft = ((mainImg.width - imgDiv.clientWidth) * leftPct) ;
+	imgDiv.scrollTop = ((mainImg.height - imgDiv.clientHeight) * topPct) ;
+
 	rescaleAllBoxes();	
 }
 
@@ -1555,8 +1576,8 @@ ipcRenderer.on('labeller:switchImage', (event, arg) => {
 })
 
 //Receive messages about menu options chosen by the user
-ipcRenderer.on('labeller:menuZoomIn', (event, arg) => { zoomImage(1.1); });
-ipcRenderer.on('labeller:menuZoomOut', (event, arg) => { zoomImage(0.9); });
+ipcRenderer.on('labeller:menuZoomIn', (event, arg) => { zoomImage(1.1, event); });
+ipcRenderer.on('labeller:menuZoomOut', (event, arg) => { zoomImage(0.9, event); });
 ipcRenderer.on('labeller:menuFitToWindow', (event, arg) => { zoomState="fitToWindow"; zoomToFit(); });
 ipcRenderer.on('labeller:menuOriginalSize', (event, arg) => { zoomState="originalSize"; zoomToNatural(); });
 ipcRenderer.on('labeller:menuStickyZoom', (event, arg) => { zoomState="stickyZoom"; });
@@ -1625,8 +1646,8 @@ function decodeKeyPressDown(event){
 
 				case "Numpad6": nextImage(); break; 
 				case "Numpad4": prevImage(); break; 
-				case "Numpad8": zoomImage(1.1); break;
-				case "Numpad5": zoomImage(0.9); break;
+				case "Numpad8": zoomImage(1.1, event); break;
+				case "Numpad5": zoomImage(0.9, event); break;
 
 				case "Backspace":
 				case "Delete":
@@ -1666,6 +1687,8 @@ window.onkeyup = decodeKeyPressUp;
 //Capture mouseups outside of the image area
 window.onmouseup = wholeWindowMouseUpHandler;
 document.getElementById("theimage").onmousedown = prepareBoxDraw;
+//Capture the mouse movements against the dic containg the image (used for zooming)
+document.getElementById("imageDiv").onmousemove = setLastMousePos;
 
 </script>
 <script src="../js/export_ui.js" ></script>
