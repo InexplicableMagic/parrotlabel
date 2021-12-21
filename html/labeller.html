@@ -65,6 +65,7 @@
 		border-color: #000000;
 		user-select: none;
 		user-drag: none;
+		image-rendering: pixelated;
 	}
 
 	/* Wastebasket icon style for deleting categories */
@@ -841,12 +842,23 @@ function stopBox (evt) {
 		mainImg.onmouseup = null;
 		let r = document.getElementById(current_div);
 
+		let imageOffsetLeft = mainImg.offsetLeft+parseInt( window.getComputedStyle(mainImg).borderWidth );
+		let imageOffsetTop = mainImg.offsetTop+parseInt( window.getComputedStyle(mainImg).borderWidth );
 	
 		//Prevent leaking outside the image area
-		if( (parseInt(r.style.top)+parseInt(r.style.height)) >= (mainImg.offsetTop + mainImg.height) )
-			r.style.height = ((mainImg.offsetTop + mainImg.height-1) - parseInt(r.style.top))+"px";
-		if( (parseInt(r.style.left)+parseInt(r.style.width)) >= (mainImg.offsetLeft + mainImg.width) )
-			r.style.width = ((mainImg.offsetLeft + mainImg.width-1) - parseInt(r.style.left))+"px";
+		if( parseInt(r.style.left) < imageOffsetLeft )
+			r.style.left = imageOffsetLeft+"px";
+		if( parseInt(r.style.top) < imageOffsetTop )
+			r.style.top = imageOffsetTop+"px";
+		if( parseInt(r.style.left) >= (imageOffsetLeft + mainImg.width) )
+			r.style.left = (imageOffsetLeft + mainImg.width - 1)+"px";
+		if( parseInt(r.style.top) >= (imageOffsetTop + mainImg.height) )
+			r.style.top = (imageOffsetTop + mainImg.height - 1)+"px";
+		if( (parseInt(r.style.top)+parseInt(r.style.height)) >= (imageOffsetTop + mainImg.height) )
+			r.style.height = ((imageOffsetTop + mainImg.height) - parseInt(r.style.top))+"px";
+		if( (parseInt(r.style.left)+parseInt(r.style.width)) >= (imageOffsetLeft + mainImg.width) )
+			r.style.width = ((imageOffsetLeft + mainImg.width) - parseInt(r.style.left))+"px";
+		
 
 		//Prevent accidential creation of tiny boxes with a click
 		if( parseInt(r.style.height) > 3 || parseInt(r.style.width) > 3  ){
@@ -890,12 +902,33 @@ function resetBoxPercentages( boxDiv ){
 	imgWidth = mainImg.width;
 	imgHeight = mainImg.height
 
+	let imageOffsetLeft = mainImg.offsetLeft+parseInt( window.getComputedStyle(mainImg).borderWidth );
+	let imageOffsetTop = mainImg.offsetTop+parseInt( window.getComputedStyle(mainImg).borderWidth );
+
 	//Avoid divide by zero bugs
 	if(imgWidth > 0 && imgHeight > 0){
-		boxDiv.curBoxLeftPct =  (parseInt(boxDiv.style.left)-mainImg.offsetLeft)/(mainImg.width);
+		boxDiv.curBoxLeftPct =  (parseInt(boxDiv.style.left)-imageOffsetLeft)/(mainImg.width);
 		boxDiv.curBoxWidthPct =  parseInt(boxDiv.style.width)/mainImg.width;
-		boxDiv.curBoxTopPct =  (parseInt(boxDiv.style.top)-mainImg.offsetTop)/(mainImg.height);
+		boxDiv.curBoxTopPct =  (parseInt(boxDiv.style.top)-imageOffsetTop)/(mainImg.height);
 		boxDiv.curBoxHeightPct =  parseInt(boxDiv.style.height)/mainImg.height;
+
+		//Defensive checks for rounding and off by one bugs - code should not be required
+		if( boxDiv.curBoxLeftPct < 0 )
+			boxDiv.curBoxLeftPct = 0;
+		if( boxDiv.curBoxTopPct < 0 )
+			boxDiv.curBoxTopPct = 0;
+		if( boxDiv.curBoxWidthPct > 1 )
+			boxDiv.curBoxWidthPct = 1;
+		if( boxDiv.curBoxWidthPct < 0 )
+			boxDiv.curBoxWidthPct = 0;
+		if( boxDiv.curBoxHeightPct > 1 )
+			boxDiv.curBoxHeightPct = 1;
+		if( boxDiv.curBoxHeightPct < 0 )
+			boxDiv.curBoxHeightPct = 0;
+		if( boxDiv.curBoxLeftPct > 1 )
+			boxDiv.curBoxLeftPct = (mainImg.naturalWidth-1)/mainImg.naturalWidth;
+		if( boxDiv.curBoxTopPct > 1 )
+			boxDiv.curBoxTopPct = (mainImg.naturalHeight-1)/mainImg.naturalHeight;
 
 	}
 }
@@ -1169,6 +1202,9 @@ function rescaleAllBoxes(){
 	let new_image_width = mainImg.width;
 	let new_image_height = mainImg.height;
 
+	let imageOffsetLeft = mainImg.offsetLeft+parseInt( window.getComputedStyle(mainImg).borderWidth );
+	let imageOffsetTop = mainImg.offsetTop+parseInt( window.getComputedStyle(mainImg).borderWidth );
+
 	let boxes = document.getElementById("imageDiv").getElementsByTagName('div');
 	for(let i = 0; i < boxes.length; i++) {
 		if(boxes[i].inuse == true){
@@ -1188,9 +1224,9 @@ function rescaleAllBoxes(){
 			if(height > new_image_height)
 				height = new_image_height;
 
-			boxes[i].style.left = ""+(left+mainImg.offsetLeft)+"px";
+			boxes[i].style.left = ""+(left+imageOffsetLeft)+"px";
 			boxes[i].style.width = ""+width+"px";
-			boxes[i].style.top = ""+(top+mainImg.offsetTop)+"px";
+			boxes[i].style.top = ""+(top+imageOffsetTop)+"px";
 			boxes[i].style.height = ""+height+"px";
 		}
 
@@ -1386,7 +1422,7 @@ function rezoomBasedOnState(){
 //zoom image a specific percentage
 function zoomImage(pct){
 	let mainImg = document.getElementById("theimage");
-	let newWidth = mainImg.width * pct;
+	let newWidth = Math.floor(mainImg.width * pct);
 
 	mainImg.style.width = newWidth+"px";
 	rescaleAllBoxes();	
@@ -1438,26 +1474,28 @@ function nudgeBox(direction){
 		let imgDiv = document.getElementById("imageDiv");
 		if(box != undefined){
 			if(box.inuse){
+				let imageOffsetLeft = mainImg.offsetLeft+parseInt( window.getComputedStyle(mainImg).borderWidth );
+				let imageOffsetTop = mainImg.offsetTop+parseInt( window.getComputedStyle(mainImg).borderWidth );
 				let newTop, newHeight, newLeft, newWidth;
 				switch( direction ){
 					case "up":
 						newTop = parseInt(box.style.top)-1;
-						if( newTop >= mainImg.offsetTop )
+						if( newTop >= imageOffsetTop )
 							box.style.top = newTop+"px";
 						break;
 					case "down":
 						newTop = parseInt(box.style.top)+1;
-						if( (newTop + parseInt(box.style.height)) <= ( mainImg.offsetTop + mainImg.height )  )
+						if( (newTop + parseInt(box.style.height)-1 ) < ( imageOffsetTop + mainImg.height )  )
 							box.style.top = newTop+"px";
 						break;
 					case "left":
 						newLeft = parseInt(box.style.left)-1;
-						if(newLeft >= mainImg.offsetLeft)
+						if(newLeft >= imageOffsetLeft)
 							box.style.left = newLeft+"px";
 						break;
 					case "right":
 						newLeft = parseInt(box.style.left)+1;
-						if(newLeft + parseInt(box.style.width) <= ( mainImg.offsetLeft+mainImg.width )) 
+						if( (newLeft + parseInt(box.style.width)-1 ) < ( imageOffsetLeft+mainImg.width )) 
 							box.style.left = newLeft+"px";
 						break;		
 					case "right-left":
@@ -1467,7 +1505,7 @@ function nudgeBox(direction){
 						break;
 					case "right-right":
 						newWidth = parseInt(box.style.width)+1;
-						if(newWidth + parseInt(box.style.left) <= ( mainImg.offsetLeft+mainImg.width ))
+						if(newWidth + parseInt(box.style.left) <= ( imageOffsetLeft+mainImg.width ))
 							box.style.width = newWidth+"px";
 						break;
 					case "bottom-up":
@@ -1477,7 +1515,7 @@ function nudgeBox(direction){
 						break;
 					case "bottom-down":
 						newHeight = parseInt(box.style.height)+1;
-						if( (newHeight + parseInt(box.style.top)) <= ( mainImg.offsetTop + mainImg.height ))
+						if( (newHeight + parseInt(box.style.top)) <= ( imageOffsetTop + mainImg.height ))
 							box.style.height = newHeight+"px";
 						break;
 				}				
