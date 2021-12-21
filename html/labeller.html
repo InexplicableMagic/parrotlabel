@@ -65,7 +65,7 @@
 		border-color: #000000;
 		user-select: none;
 		user-drag: none;
-		image-rendering: pixelated;
+		image-rendering: high-quality;
 	}
 
 	/* Wastebasket icon style for deleting categories */
@@ -1572,6 +1572,12 @@ ipcRenderer.on('labeller:hideShowLabels', (event, arg) => { hideShowLabels(); })
 ipcRenderer.on('labeller:menuExport', (event, arg) => { showExportDiv(); });
 ipcRenderer.on('labeller:showImagePaths', (event, arg) => { showHideImagePathDiv(); });
 ipcRenderer.on('labeller:hideShowBoxes', (event, arg) => { showHideBoxes(); });
+ipcRenderer.on('labeller:setSmoothPixels', (event, arg) => { setPixelMode("auto"); });
+ipcRenderer.on('labeller:setSharpPixels', (event, arg) => { setPixelMode("pixelated"); });
+
+function setPixelMode(mode){
+	document.getElementById("theimage").style.imageRendering = mode;
+}	
 
 function showHideImagePathDiv(){
 
