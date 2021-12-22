@@ -1427,24 +1427,26 @@ function setLastMousePos(evt){
 	lastMouseY = evt.clientY;
 }
 
-//zoom image a specific percentage
+//zoom image a specific percentage focussing on the mouse location
 function zoomImage(pct){
 	let mainImg = document.getElementById("theimage");
 	let newWidth = Math.floor(mainImg.width * pct);
 
 	let imgDiv = document.getElementById("imageDiv");
 
-	//Caculate where on the image the mouse was pointing
-	let offsetX = imgDiv.offsetLeft - imgDiv.scrollLeft;
-	let offsetY = imgDiv.offsetTop - imgDiv.scrollTop;
-	let leftPct = (lastMouseX - offsetX) / mainImg.width ;
-	let topPct = (lastMouseY - offsetY) / mainImg.height ;
+	let offsetRelativeToImageX = (lastMouseX - imgDiv.offsetLeft) + imgDiv.scrollLeft ;
+	let offsetRelativeToImageY = (lastMouseY - imgDiv.offsetTop) + imgDiv.scrollTop;
+	
+	let newExpectedXPos = offsetRelativeToImageX * pct;
+	let newExpectedYPos = offsetRelativeToImageY * pct;
+
+	let deltaX = newExpectedXPos - offsetRelativeToImageX;
+	let deltaY = newExpectedYPos - offsetRelativeToImageY;
 
 	mainImg.style.width = newWidth+"px";
 
-	//Auto scroll the window to try and keep where on the image the mouse was pointing in view
-	imgDiv.scrollLeft = ((mainImg.width - imgDiv.clientWidth) * leftPct) ;
-	imgDiv.scrollTop = ((mainImg.height - imgDiv.clientHeight) * topPct) ;
+	imgDiv.scrollLeft = imgDiv.scrollLeft + deltaX;
+	imgDiv.scrollTop = imgDiv.scrollTop + deltaY;
 
 	rescaleAllBoxes();	
 }
@@ -1679,6 +1681,15 @@ function decodeKeyPressUp(event){
 	}
 }
 
+function handleMouseWheel(event){
+	if(event.ctrlKey == true){
+		if(event.deltaY < 0){
+			zoomImage(1.1, event);
+		}else
+			zoomImage(0.9, event);
+	}
+}
+
 //When the window is resized, scale the image with it and redraw the boxes at the new scale
 window.onresize = rescaleImageAndRepaint;
 //Capture hotkey presses
@@ -1687,6 +1698,7 @@ window.onkeyup = decodeKeyPressUp;
 //Capture mouseups outside of the image area
 window.onmouseup = wholeWindowMouseUpHandler;
 document.getElementById("theimage").onmousedown = prepareBoxDraw;
+document.getElementById("theimage").onwheel = handleMouseWheel;
 //Capture the mouse movements against the dic containg the image (used for zooming)
 document.getElementById("imageDiv").onmousemove = setLastMousePos;
 
