@@ -5,6 +5,12 @@
 	<title>Inexplicable Magic - Config</title>
 
 		<style>
+			h3{
+			    padding: 0px;
+			    padding-bottom: 5px;
+			    margin: 0px;
+			}
+
 			.formSectionUnhighlighted {
 				background-color: white;
 				padding: 10px;
@@ -61,17 +67,20 @@
 		</div>
 		<div id="jsonFileDiv" hidden="true" class="formSectionUnhighlighted">
 			<h3>Set Existing Annotations File</h3>
+			<span>Click browse to locate a previously saved labelling file.</span><br/><br/>
 			<button type="button" id="browseJSONFile" onclick="javascript:browseExistingJSONFile();">Browse</button>  <span class="fileInputArea" id="labellingfile">/path/to/existing_annotations_file</span>
 			<p id="jsonfiletatefeedback"></p>
 		</div>
 
 		<div id="dirDiv" class="formSectionHighlighted">
 			<h3>Set Images Directory</h3>
+			<span>Click browse to set the location of the images directory. This will be scanned recursively for images.</span><br/><br/>
 			<button id="imageDirButton" type="button" onclick="javascript:browseImageDir();">Browse</button>  <span class="fileInputArea" id="imagedir">/path/to/images/</span>
 			<p id="imagesdirstatefeedback"></p>
 		</div>
 		<div id="validateImagesDiv" class="formSectionUnhighlighted" >
 			<h3>Verify Images Exist</h3>
+			<span>Check that the number of images found is as expected.</span><br/><br/>
 			<button id="validateImagesButton" disabled="true" type="button" onclick="javascript:validateImageFiles();">Validate Images</button> 
 			<br/><br/>
 			<div id="dirstats"></div>		

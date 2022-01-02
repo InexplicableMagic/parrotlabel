@@ -131,6 +131,13 @@ function createLabellerWindow() {
 		switchImage(cur_image); 
 	});
 
+	mainWindow.on('close', function(e){
+	   	if(needsSave){
+			if( ! checkSaveOnExit() )
+				e.preventDefault();
+		}
+    	});
+
 }
 
 function helpWindow(manual_page){
@@ -236,6 +243,7 @@ ipcMain.on('app:preserveState', (event, arg) => {
 			break;
 		case "saveAndQuit":
 			if(save())
+				needsSave = false;
 				mainWindow.close();
 			break;
 		case "pascalVOCExport":
@@ -651,14 +659,18 @@ ipcMain.on('app:SyncListedCategoryMetadata', (event, arg) => {
 function checkSaveOnExit(){
 
 	if(needsSave){
-		let response = dialog.showMessageBoxSync( { "message": "Save changes?", "buttons": [ "Yes", "No" ], "defaultId": 0   }  )
+		let response = dialog.showMessageBoxSync( { "message": "Save changes?", "buttons": [ "Yes", "No", "Cancel" ], "defaultId": 0   }  )
 		if( response == 0 ){
-			saveMenu(false,true);
-			return;
-		} 
+			return saveMenu(false,true);
+		}else if (response == 1){
+			needsSave = false;
+			mainWindow.close();
+		}else if(response == 2){
+			return false;
+		}
 	}
 
-	mainWindow.close();
+	return true;
 		
 }
 
@@ -679,11 +691,11 @@ function saveMenu(saveAs=false, quit=false){
 	if(saveFileName == "" || saveAs){
 		const savePath = dialog.showSaveDialogSync(null);
 		if( savePath == undefined )
-			return;
+			return false;
 		if( iafsUtils.fileExists( savePath ) ){
 			let response = dialog.showMessageBoxSync( { "message": "Overwrite existing file?", "buttons": [ "Cancel", "Yes" ], "defaultId" : 0  }  )
 			if( response != 1 )
-				return;
+				return false;
 		}
 
 		saveFileName = savePath;
@@ -695,6 +707,8 @@ function saveMenu(saveAs=false, quit=false){
 		mainWindow.webContents.send("labeller:saveAndQuit")
 	else
 		mainWindow.webContents.send("labeller:save")
+
+	return true;
 }
 
 function save( filename=saveFileName ){
