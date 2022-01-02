@@ -130,4 +130,4 @@ function exportLabellingAsPascalVOC( fpath, flist_item ){
 	
 }
 
-module.exports = { pascalVOCExport  }
+module.exports = { pascalVOCExport }

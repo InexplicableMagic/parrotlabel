@@ -270,14 +270,20 @@
 <!-- Export -->
 <div id="exportDiv" class="modalForm2">
 	<div class="modalFormDivSpacing">
-		<input type="radio" onclick="" name="chooseFormat" checked value="pascalVOC" id="pascalVOCExportRadio">Pascal VOC (XML)</input><br/>
-		<input type="radio" onclick="" name="chooseFormat" value="CSV">CSV</input>
+		<input type="radio" onclick="javascript:showHideDivInline('exportPascalVOCFormatDiv', ['exportCSVFormatDiv'])" name="chooseFormat" checked value="pascalVOC" id="pascalVOCExportRadio">Pascal VOC (XML)</input><br/>
+		<input type="radio" onclick="javascript:showHideDivInline('exportCSVFormatDiv', ['exportPascalVOCFormatDiv'])" name="chooseFormat" value="CSV" id="csvExportRadio">CSV</input>
 	</div>
-	<div id="pascalVOCFormatDiv" class="modalFormDivSpacing">
+	<div id="exportPascalVOCFormatDiv" class="modalFormDivSpacing">
 		<p>Set export directory for XML file set:</p>
 		<button id="pascalExportDirButton" type="button" onclick="javascript:setPascalExportDir();">Browse</button>
 		<span class="fileInputArea modalFormDivSpacing" id="pascalDIR"></span><br><br>
 		<span id="pascalExportDirFeedback"></span>
+	</div>
+	<div id="exportCSVFormatDiv" class="modalFormDivSpacing" style="display: none;">
+		<p>Set export file location for CSV format:</p>
+		<button id="csvExportDirButton" type="button" onclick="javascript:setCSVSaveDirectory();">Browse</button>
+		<span class="fileInputArea modalFormDivSpacing" id="csvFile"></span><br><br>
+		<span id="csvExportDirFeedback"></span>
 	</div>
 	<div class="modalFormDivSpacing justifiedEven">
 		<button id="cancelExportButton" type="button" onclick="javascript:closeExportDialogue();">Cancel</button>
@@ -460,6 +466,12 @@ function validateNewBoxCategoryForm(isModify=false){
 		if( catNum >= 0 ){ alert("Categeory name already exists"); return false; }
 	}
 
+	if( hotkey != "" )
+		if( getHotKeyBoxCategoryRowNum( hotkey ) != -1 ){
+			 alert("That hotkey is already in use."); 
+			 return false;
+		}
+
 	return true;
 }
 
@@ -556,7 +568,8 @@ function hideRenameBoxCategoryForm(){
 
 //When the user has clicked "Add" in the dialogue box for adding a new category
 function addCategorySubmit(){
-	let isModifyText = document.getElementById("catModify").value;
+	//Hidden element that was set to indicate if this form represents adding a new category or a modification of an existing category
+	let isModifyText = document.getElementById("catModify").value;	
 	let isModify = false;
 	if(isModifyText=="true")
 		isModify = true;
@@ -565,18 +578,17 @@ function addCategorySubmit(){
 		let catname = document.getElementById("catname").value;
 		let hotkey = document.getElementById("hotkey").value;
 
-		if( isModify == false ){
+		if( isModify == false ){	//Are we modifying an existing category or adding a new one
 			addBoxCategory( catname, hotkey );
 			highlightCategoryInList( catname );
 		}else{
 			renameBoxCategoryGlobally( selectedCategory, catname, hotkey );
 		}
 
-		//Remove the form from the screen
-		addCategoryCancel();
-		stateChange();
-		syncCategoryListMain();
-		resetAllBoxColours();
+		addCategoryCancel(); 	//Remove the form from the screen
+		stateChange();		//Notify that there is something that may need saving when the user exits the application
+		syncCategoryListMain();	//Store a copy of the current list of box categories in the main nodejs process
+		resetAllBoxColours();	//If a category was deleted and re-added then update the colours of any boxes currently on screen
 	}
 	
 }

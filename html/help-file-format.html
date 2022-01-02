@@ -1,0 +1,71 @@
+<html>
+	<title>File Format</title>
+<body>
+	<p>The native file format is serialised in JSON and is split into three sections:</p>
+
+	<p>
+	<code>{ "file_format": { ... }, "config": { ... }, "labels": [ ... ] }</code>
+
+		<ul>
+			<li><b>file_format</b> - contains values used to identify the file format (required)</li>
+			<li><b>config</b> - contains configuration values to help restore the users previous labelling session (optional)</li>
+			<li><b>labels</b> - contains the image labelling (required)</li>
+		</ul>
+	<h3>file_format Section</h3>
+	<p>
+		
+	</p>	
+	<pre><code>
+	"file_format": {
+		 "magic": "43a04f6d-f95b-41da-8b92-f4c9f859d3fb",
+		 "version": 1
+	}</code></pre>
+	</p><p>
+	The <b>magic</b> key always contains the value "43a04f6d-f95b-41da-8b92-f4c9f859d3fb" and is to enable a parser 
+	to quickly identify the file type and differentiate it from other JSON files. If this key is not present with this value then it is 
+	not a labelling file.
+	</p><p>
+	The <b>version</b> identifies the version of the file. Currently this is always 1.
+	</p><p>
+
+	</p>
+	<h3>labels Section</h3>
+	<p>
+	<pre><code>
+	{
+      		"image_width": 1200,
+      		"image_height": 900,
+      		"image_path": "subdira/ImageP14.jpg",
+	      	"box_list": [ ... ]
+	}	
+	</code></pre>
+	</p><p>
+	The labels section is an array of objects. There is one object per image. 
+	</p><p>
+	<b>image_width</b> and <b>image_height</b> are the width and height of the image that was labelled in pixels. These values are optional as this format does not measure in pixels but are included as a convenience for converting to other formats without needing to load the original images to determine the size. This tool does not store the image height and width if an image was never examined. However that should also mean the image is not marked with any boxes and therefore there would be nothing to convert.
+	</p><p>
+	The key <b>image_path</b> must be present and is the relative path to the image relative to the base directory specified in the  "image_dir_base_path" key. This should follow UNIX style path conventions.
+	</p><p>
+	<b>box_list</b> is an array of objects. There is one object per labelled box for the image. The array may be empty but the box_list key must be present even is there are no labelled boxes for this image.
+	</p><p>
+	<pre><code>
+	{
+          "leftPct": 0.014412416851441241,
+          "widthPct": 0.7142857142857143,
+          "topPct": 0.23515439429928742,
+          "heightPct": 0.7559241706161137,
+          "label": "Dog"
+        }
+	</pre></code>
+	</p><p>
+	<b>widthPct</b> is a floating point value between 0 and 1 inclusive and is the width of the drawn box expressed as a percentage of the image width. Hence if the image width is 100 pixels then 0.1 means the box width is 10 pixels. Similarly <b>heightPct</b> is the height of the drawn box expressed as a percentage of the image height.
+	</p><p>
+	<b>leftPct</b> is a floating point value from zero to just less than 1 and is the left hand edge of the box expressed as a percentage across the image starting at the left edge. If the image is 100 pixels wide, then values greater than and including zero but less than and not including 0.01 refers to the left-most column of pixels. Values from and including 0.01 up to but not including 0.02 means the 2nd column of pixels from the left edge of the image. Technically a value of 1 can never be reached, however due to inevitable rounding errors and as a matter of convenience, the right-most column of pixels should include 1. It would also be prudent to accept any value greater than 1 as meaning the right-most column of pixels in case a floating point calculation rounds to very slightly over 1.
+	</p><p>
+	<b>topPct</b> works the same as leftPct except it is the distance expressed as a percentage from the top edge of the image to the top edge of the drawn box.
+	</p><p>
+	<b>label</b> is the category that was applied to the box and should be assumed to be UTF-8.
+	</p>
+	
+</body>
+</html>

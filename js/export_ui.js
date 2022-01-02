@@ -1,3 +1,15 @@
+
+
+
+
+
+function showHideDivInline( divToShow, divsToHide ){
+	for(theDiv of divsToHide)
+		document.getElementById(theDiv).style.display = "none"
+	document.getElementById(divToShow).style.display = "inline";
+	
+}
+
 function showExportDiv(){
 	if(!modalCurrentlyOnScreen){
 		modalCurrentlyOnScreen = true;
@@ -33,17 +45,37 @@ ipcRenderer.on('labeller:setPascalExportPath', (event, arg) => {
 });
 
 
-
-
 function handleExportDialogue(){
-	if(document.getElementById("pascalVOCExportRadio").checked)
-		doPascalVOCExport();	
+	if(document.getElementById("pascalVOCExportRadio").checked){
+		doPascalVOCExport();
+	}else{
+		if(document.getElementById("csvExportRadio").checked)
+		doCSVExport();
+	}
+	closeExportDialogue();
 }
+
+function setCSVSaveDirectory(){
+	ipcRenderer.send('app:getSavePathSelection', { "replyto": "labeller:verifyCSVExportPath" });
+}
+
+ipcRenderer.on('labeller:verifyCSVExportPath', (event, arg) => {
+	document.getElementById("csvFile").innerHTML = arg.savePath;
+	if( arg.pathChosen ){
+		document.getElementById("csvExportDirFeedback").innerHTML = "<font color=\"green\">&#10003;</font> Export file set";
+		document.getElementById("doExportButton").disabled = false;
+	}
+});
+
 
 function doPascalVOCExport(){
 	let paths = document.getElementById("pascalDIR").innerHTML;
 	ipcRenderer.send('app:preserveState', { "command": "pascalVOCExport", "labelling_state": getFullLabellingState(), "dir": paths } );
-	closeExportDialogue();
+}
+
+function doCSVExport(){
+	let path = document.getElementById("csvFile").innerHTML;
+	ipcRenderer.send('app:preserveState', { "command": "csvExport", "labelling_state": getFullLabellingState(), "savePath": path } )
 }
 
 function closeExportDialogue(){

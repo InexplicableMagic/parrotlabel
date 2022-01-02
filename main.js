@@ -5,6 +5,7 @@ var fs = require('fs');
 const util = require('util')
 const iafsUtils = require ('./js/iafsUtils.js')
 const pvoc = require ('./js/pascalVOCExport.js')
+const csve = require ('./js/csvExport.js')
 
 const {
   Worker, isMainThread, parentPort, workerData
@@ -109,7 +110,9 @@ function createLabellerWindow() {
 	{
 	  label: 'Help',
 	  submenu: [
-		{label:'Keyboard Shortcuts', click(){ helpWindow("keyboard-shortcuts.html"); }},
+		{label:'Quickstart Tutorial', click(){ helpWindow("help-quickstart.html"); }},
+		{label:'Keyboard Shortcuts', click(){ helpWindow("help-keyboard-shortcuts.html"); }},
+		{label:'File Format Description', click(){ helpWindow("help-file-format.html"); }},
 	  ]
 	},
 
@@ -238,6 +241,9 @@ ipcMain.on('app:preserveState', (event, arg) => {
 		case "pascalVOCExport":
 			doPascalVOCExport(arg.dir);
 			break;
+		case "csvExport":
+			doCSVExport(arg.savePath);
+			break;
 	}
 });
 
@@ -333,6 +339,29 @@ ipcMain.on('app:getDirSelection', (event, arg) => {
 		 if( data.filePaths.length > 0 )
 			lastBrowsedDirectory = data.filePaths[0];
 	});
+
+});
+
+//Popup the save dialog
+ipcMain.on('app:getSavePathSelection', (event, arg) => {
+
+	const savePath = dialog.showSaveDialogSync(null);
+
+	if( savePath == undefined ){
+		event.reply(arg.replyto, { "pathChosen": false } );
+		return;
+	}
+
+	if( iafsUtils.fileExists( savePath ) ){
+		let response = dialog.showMessageBoxSync( { "message": "Overwrite existing file?", "buttons": [ "Cancel", "Yes" ], "defaultId" : 0  }  )
+		if( response != 1 ){
+			event.reply(arg.replyto, { "pathChosen": false } );
+			return;
+		}
+	}
+
+	event.reply(arg.replyto, { "pathChosen": true, "savePath": savePath } );
+
 
 });
 
@@ -725,6 +754,12 @@ function doPascalVOCExport(dir) {
 	}
 }
 
+function doCSVExport(path){
+	let result = csve.csvExport( path, file_list );
+	if( "error" in result ){
+		dialog.showMessageBoxSync( { "message": "Error exporting: "+result.error, "buttons": [ "OK" ] } );
+	}
+}
 
 
 

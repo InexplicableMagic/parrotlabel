@@ -154,6 +154,8 @@
 
 		function validateImageFiles(){
 			document.getElementById("dirstats").innerHTML = "Searching for images...";
+			document.getElementById("startLabellingDiv").className="formSectionUnhighlighted";
+			document.getElementById("startButton").disabled = true;
 			ipcRenderer.send('app:initialiseLabellingState');			
 		}
 

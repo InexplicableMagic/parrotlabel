@@ -119,7 +119,7 @@ function getAllImages( base_path ){
 	
 
 	for(i=0;i<file_listing.length;i++){
-		let relative_fpath = file_listing[i];
+		let relative_fpath = file_listing[i].replace('\\', '/');
 		let absolute_url = 'file://'+path.join( base_path, relative_fpath );  
 		output_list.push( generateEmptyFileObject( base_path, relative_fpath ) );
 	}
@@ -128,10 +128,11 @@ function getAllImages( base_path ){
 }
 
 function generateEmptyFileObject( base_path, relative_fpath ){
-	let absolute_url = 'file://'+path.join( base_path, relative_fpath )
+	let slashCorrectedRelative = relative_fpath.replace('\\', '/');
+	let absolute_url = 'file://'+path.join( base_path, slashCorrectedRelative )
 	
 	let obj = { 
-			"path": relative_fpath, 
+			"path": slashCorrectedRelative, 
 			"image_url": absolute_url, 
 			"labelling_state" : { "box_list" : []  }
 		  }
