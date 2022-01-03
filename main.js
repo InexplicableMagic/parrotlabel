@@ -18,6 +18,7 @@ var saveFileName = "";
 var needsSave = false;	//If the state has changed and a save is needed
 //A unique value to identify this format not likely to collide with any other app
 const formatMagicNumber = "43a04f6d-f95b-41da-8b92-f4c9f859d3fb";
+const formatName = "ParrotLabel";
 
 var loaded_labelling_file_content = undefined;
 var base_image_directory = "";
@@ -742,6 +743,7 @@ function saveMenu(saveAs=false, quit=false, newSession=false){
 function save( filename=saveFileName ){
 	o = { 
 		"file_format" : {
+			"name" : formatName,
 			"magic" : formatMagicNumber,
 			"version" : 1
 		},

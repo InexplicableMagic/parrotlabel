@@ -1,7 +1,7 @@
 <html>
-	<title>File Format</title>
+	<title>ParrotLabel File Format</title>
 <body>
-	<p>The native file format is serialised in JSON and is split into three sections:</p>
+	<p>The native ParrotLabel file format is serialised in JSON and is split into three sections:</p>
 
 	<p>
 	<code>{ "file_format": { ... }, "config": { ... }, "labels": [ ... ] }</code>
@@ -17,13 +17,15 @@
 	</p>	
 	<pre><code>
 	"file_format": {
+		 "name": "ParrotLabel",
 		 "magic": "43a04f6d-f95b-41da-8b92-f4c9f859d3fb",
 		 "version": 1
 	}</code></pre>
 	</p><p>
+	The <b>name</b> key is the human readable name of the format for the benefit of anyone manually inspecting the file and is always set to "ParrotLabel".
 	The <b>magic</b> key always contains the value "43a04f6d-f95b-41da-8b92-f4c9f859d3fb" and is to enable a parser 
-	to quickly identify the file type and differentiate it from other JSON files. If this key is not present with this value then it is 
-	not a labelling file.
+	to quickly identify the file type and differentiate it from other JSON files. If this key is not present with this exact value then it is 
+	not a ParrotLabel file.
 	</p><p>
 	The <b>version</b> identifies the version of the file. Currently this is always 1.
 	</p><p>
