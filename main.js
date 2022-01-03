@@ -114,12 +114,12 @@ function createLabellerWindow() {
 	  ]
 	},
 
-	{
+	/*{
 	  label: 'Debug',
 	  submenu: [
 		{label:'Debug Tools', click(){ mainWindow.openDevTools();},accelerator: 'CmdOrCtrl+Shift+I' },
 	  ]
-	},
+	},*/
 
 	])
 	Menu.setApplicationMenu(menu);
@@ -175,6 +175,8 @@ function createConfigWindow() {
       protocol: 'file:', 
       slashes: true
    })) 
+
+   mainWindow.removeMenu();
 }
 
 app.on('ready',function(){
