@@ -108,9 +108,9 @@ function createLabellerWindow() {
 	{
 	  label: 'Help',
 	  submenu: [
-		{label:'Quickstart Tutorial', click(){ helpWindow("help-quickstart.html"); }},
-		{label:'Keyboard Shortcuts', click(){ helpWindow("help-keyboard-shortcuts.html"); }},
-		{label:'File Format Description', click(){ helpWindow("help-file-format.html"); }},
+		{label:'Quickstart Tutorial', click(){ helpWindow("help-quickstart.html", 900, 900); }},
+		{label:'Keyboard Shortcuts', click(){ helpWindow("help-keyboard-shortcuts.html", 600, 400); }},
+		{label:'File Format Description', click(){ helpWindow("help-file-format.html", 900, 900); }},
 	  ]
 	},
 
@@ -138,11 +138,11 @@ function createLabellerWindow() {
 
 }
 
-function helpWindow(manual_page){
+function helpWindow(manual_page, widthSize, heightSize){
 	let helpWindow = new BrowserWindow(
 	{
-	width: 800, 
-	height: 900,
+	width: widthSize, 
+	height: heightSize,
 	webPreferences: {
 		nodeIntegration: true,
 		contextIsolation: false,

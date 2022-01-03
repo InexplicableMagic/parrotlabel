@@ -1,5 +1,20 @@
 <html>
 	<title>Quickstart Tutorial</title>
+	<style>
+		.imagePadding {
+			margin: 20px;			
+		}
+
+		.imageBorder {
+			border-style: solid;
+			border-width: 1px;			
+		}
+
+		.imageCaptionFont {
+			font-style: italic;
+	            	font-size: 10px;
+		}
+	</style>
 <body>
 
 <h3>Starting a New Labelling Session</h3>
@@ -8,8 +23,12 @@
 	<li>Click "Browse" under Set Images Directory. Choose the diretory containg the images to be labelled.
 	<ul><li>Sub-directories will also be inspected recursively for images</li></ul>
 	</li>
+	<img src="../img/HelpSetImagesDirectory.png" class="imagePadding imageBorder" />
 	<li>Under "Verify Images Exist", a count of the total number of images found will be shown
 	<ul><li>If zero images were found, the session cannot proceed. In which case click browse again and choose another directory.</li></ul>
+
+	<img src="../img/HelpNumberOfImagesFound.png" class="imagePadding imageBorder" />
+
 	<li>Click "Start Labelling"</li>
 	</li>
 </ul>
@@ -17,15 +36,30 @@
 <h3>Labelling Images</h3>
 	<ul>
 		<li>Click the "Add New Box Category" button</li>
+
+		<img src="../img/HelpAddNewBoxCategory.png" class="imagePadding imageBorder" />
+
 		<li>Enter a name for the category of object that you would like to label</li>
 		<li>Optionally enter a single character hotkey.
 		<ul><li>When the hotkey is typed the category will be selected</li></ul></li>
 		<li>Click Done</li>
+
+		<img src="../img/HelpAddNewCategoryForm.png" class="imagePadding imageBorder" />
+
 		<li>Add more box categories as required to represent further objects you would like to label</li>
 		<li>Select a category either by clicking it on the right hand list or typing the hotkey that was set.</li>
+
+		<img src="../img/HelpSelectCategory.png" class="imagePadding imageBorder" />
+
 		<li>Using the mouse draw one or more boxes anywhere over the image. The drawn boxes will be assigned the selected category.</li>
-		<li>If the position of the drawn box is not quite perfect it can be adjusted slightly using the arrow keys whcih will cause the box to be nudged by one pixel</li>
-		<li>The width and height of the box can be adjusted using shift+arrow keys</li>
+		<li>If the position of the drawn box is not quite perfect it can be adjusted slightly using the arrow keys which will cause the box to be nudged by one pixel</li>
+		<li>The width and height of the drawn box can be adjusted one pixel at a time using Shift + Arrow Keys</li>
+
+
+		<figure class="imagePadding" ><img src="../img/HelpLabelledParrots.png" class="imageBorder" />
+		<figcaption class="imageCaptionFont">Photo credit S. Nivethika. <a href="https://commons.wikimedia.org/wiki/File:Pet_animal_parrot_1.jpg">License Information</a></figcaption>
+		</figure>
+
 		<li>To zoom in, use Ctrl + the mouse scrollwheel. Alternatively use Ctrl + Up Arrow or Numpad 8 whilst pointing at the position on the image to be zoomed.</li>
 		<li>When all required boxes are drawn move to the next image by either clicking "Next" or using Ctrl+the right arrow key. Numpad 6 is a further alternative,</li>
 		<li>Previously drawn boxes can be selected by Shift+Click</li>
@@ -36,10 +70,14 @@
 <h3>Exporting Labelling Data</h3>
 <ul>
 <li>First save the labelling state using "Save" from the "File" menu. The labeller cannot currently import the export formats, therefore always save a copy in the native format so that the session can be continued later if required.</li>
-<li>Choose "Export" from the file menu</li>
-<li>Choose either "Pascal VOC" or CSV (comma separated) format as required.</li>
-<li>When using Pascal VOC mode, it is the convention that the labelling data for each image is stored in a separate file. Therefore a directory must chosen where the set of files may be saved. Choose the directory and then click "Do Export". A set of XML files will then be written to the directory.
+<li>Choose "Export" from the "File" menu</li>
+<li>Choose either Pascal VOC or CSV (Comma Separated Values) format as required.</li>
+<img src="../img/HelpExportDialogue.png" class="imagePadding imageBorder" />
+<li>When using Pascal VOC mode, it is the convention that the labelling data for each image is stored in a separate file. Therefore a directory must chosen where the set of files may be saved.</li>
+<li>Choose the directory using the "Browse" button and then click "Do Export". A set of XML files will then be written to the directory (one per image).</li>
 </ul>
+
+
 
 </body>
 </html>
