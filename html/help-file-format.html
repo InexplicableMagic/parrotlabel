@@ -1,6 +1,7 @@
 <html>
 	<title>ParrotLabel File Format</title>
 <body>
+	<h3>ParrotLabel File Format</h3>
 	<p>The native ParrotLabel file format is serialised in JSON and is split into three sections:</p>
 
 	<p>
@@ -12,9 +13,6 @@
 			<li><b>labels</b> - contains the image labelling (required)</li>
 		</ul>
 	<h3>file_format Section</h3>
-	<p>
-		
-	</p>	
 	<pre><code>
 	"file_format": {
 		 "name": "ParrotLabel",
@@ -23,13 +21,39 @@
 	}</code></pre>
 	</p><p>
 	The <b>name</b> key is the human readable name of the format for the benefit of anyone manually inspecting the file and is always set to "ParrotLabel".
-	The <b>magic</b> key always contains the value "43a04f6d-f95b-41da-8b92-f4c9f859d3fb" and is to enable a parser 
+	The <b>magic</b> key always contains the value "43a04f6d-f95b-41da-8b92-f4c9f859d3fb" and is the definitive way to enable a parser 
 	to quickly identify the file type and differentiate it from other JSON files. If this key is not present with this exact value then it is 
-	not a ParrotLabel file.
-	</p><p>
+	not a ParrotLabel file. 
 	The <b>version</b> identifies the version of the file. Currently this is always 1.
+	</p>
+	<h3>config Section</h3>
+	<p>This section is optional and used is used for restoring the state of the user's last session. It contains no information of relevance to the image annotations.
+	<pre><code>
+	"config": {
+	    "image_dir_base_path": "/path/to/images",
+	    "category_meta_data": [
+	      {
+		"name": "Parrot",
+		"colour": "green",
+		"hotkey": "p"
+	      }
+	    ],
+	    "path_last_image_viewed": "subdir/parrot.png"
+	  }
+	</code></pre>
 	</p><p>
-
+	The <b>image_dir_base_path</b> key is the base directory in which the images were last found. All image paths are relative to this location. 
+	When the file is opened, as a convenience ParrotLabel will set this as the images directory. However the user can set an alternative location.
+	</p><p>
+	The <b>category_meta_data</b> section contains an array of objects that define the box label categories that were last set in ParrotLabel when the file was in use. 
+	This is not necessarily an exhaustive list of all categories that exist, this section is just a convenience to restore the user interface to the last known state. 
+	Box label categories may exist in the file that are not listed in this section. 
+	The <b>name</b> key is the name of the category and should be assumed to be UTF-8. 
+	The <b>colour</b> is the colour of the box that was last used and uses JavaScript conventions for colour names.
+	The <b>hotkey</b> is the keyboard shortcut character that was last set by the user for this category. 
+	</p><p>
+	<b>path_last_image_viewed</b> is the path relative to "image_dir_base_path" of the image the user was last working on. This is a convenience to be able to
+	automatically restore the session at the image last in use.
 	</p>
 	<h3>labels Section</h3>
 	<p>
@@ -56,7 +80,7 @@
           "widthPct": 0.7142857142857143,
           "topPct": 0.23515439429928742,
           "heightPct": 0.7559241706161137,
-          "label": "Dog"
+          "label": "Parrot"
         }
 	</pre></code>
 	</p><p>
