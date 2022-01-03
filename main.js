@@ -76,8 +76,8 @@ function createLabellerWindow() {
 	{
 	  label: 'Navigate',
 	  submenu: [
-		{label:'Next', click() { incrementImage(1); }, accelerator: 'CmdOrCtrl+Right' },
-		{label:'Prev', click() { incrementImage(-1); }, accelerator: 'CmdOrCtrl+Left' },
+		{label:'Next', click() { mainWindow.webContents.send("labeller:nextImage"); }, accelerator: 'CmdOrCtrl+Right' },
+		{label:'Prev', click() { mainWindow.webContents.send("labeller:prevImage"); }, accelerator: 'CmdOrCtrl+Left' },
 		{label:'Next Unlabelled', click() { switchNextImageNoBoxes(1); }, accelerator: 'CmdOrCtrl+N' },
 		{label:'Prev Unlabelled', click() { switchNextImageNoBoxes(-1); }, accelerator: 'CmdOrCtrl+P' },
 		{label:'First Image', click() { switchImage(0); } },

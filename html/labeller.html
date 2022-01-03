@@ -1613,6 +1613,8 @@ ipcRenderer.on('labeller:showImagePaths', (event, arg) => { showHideImagePathDiv
 ipcRenderer.on('labeller:hideShowBoxes', (event, arg) => { showHideBoxes(); });
 ipcRenderer.on('labeller:setSmoothPixels', (event, arg) => { setPixelMode("auto"); });
 ipcRenderer.on('labeller:setSharpPixels', (event, arg) => { setPixelMode("pixelated"); });
+ipcRenderer.on('labeller:nextImage', (event, arg) => { nextImage(); });
+ipcRenderer.on('labeller:prevImage', (event, arg) => { prevImage(); });
 
 function setPixelMode(mode){
 	document.getElementById("theimage").style.imageRendering = mode;
