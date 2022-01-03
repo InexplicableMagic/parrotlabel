@@ -466,11 +466,12 @@ function validateNewBoxCategoryForm(isModify=false){
 		if( catNum >= 0 ){ alert("Categeory name already exists"); return false; }
 	}
 
-	if( hotkey != "" )
+	if( (!isModify) && (hotkey != "") ){
 		if( getHotKeyBoxCategoryRowNum( hotkey ) != -1 ){
 			 alert("That hotkey is already in use."); 
 			 return false;
 		}
+	}
 
 	return true;
 }
@@ -1347,10 +1348,12 @@ function prevImage(){
 	}
 }
 
-function saveToDisk(quit=false){
+function saveToDisk(quit=false,newSession=false){
 	let command = "save";
 	if(quit)
 		command = "saveAndQuit";
+	else if(newSession)
+		command = "saveAndNewSession";
 	syncCategoryListMain();			
 	ipcRenderer.send('app:preserveState', { "command": command, "labelling_state": getFullLabellingState() } );
 }
@@ -1597,6 +1600,7 @@ ipcRenderer.on('labeller:menuOriginalSize', (event, arg) => { zoomState="origina
 ipcRenderer.on('labeller:menuStickyZoom', (event, arg) => { zoomState="stickyZoom"; });
 ipcRenderer.on('labeller:deleteBoxesByCategory', (event, arg) => { showDeleteBoxesByCategoryForm(); });
 ipcRenderer.on('labeller:renameBoxCategory', (event, arg) => { showRenameCategoryForm(); });
+ipcRenderer.on('labeller:saveAndNewSession', (event, arg) => { saveToDisk(false,true); });
 ipcRenderer.on('labeller:save', (event, arg) => { saveToDisk(false); });
 ipcRenderer.on('labeller:saveAndQuit', (event, arg) => { saveToDisk(true); });
 ipcRenderer.on('labeller:newBoxCategory', (event, arg) => { showAddCategoryForm(); });
@@ -1681,15 +1685,18 @@ function decodeKeyPressDown(event){
 
 function decodeKeyPressUp(event){
 	//If the shift key was released then
-	if(event.key == "Shift" && !isAltDown){
-		enableDisableBoxClicks(false);
+	if(event.key == "Shift"){
 		clickSelectionIterator = 0;
 		isShiftDown = false;
+		if(!isAltDown)
+			enableDisableBoxClicks(false);
+		
 	}
 
-	if(event.key == "Alt" && !isShiftDown){
-		enableDisableBoxClicks(false);
+	if(event.code == "AltRight" ){
 		isAltDown = false;
+		if(!isShiftDown)
+			enableDisableBoxClicks(false);	
 	}
 }
 

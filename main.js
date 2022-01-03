@@ -51,13 +51,11 @@ function createLabellerWindow() {
 	{
 	  label: 'File',
 	  submenu: [
-		{label:'New'},
+		{label:'New', click() {  checkSaveOnExit(true); } },
 		{type: 'separator' },
 		{label:'Save', click() {  saveMenu(); },accelerator: 'CmdOrCtrl+S' },
 		{label:'Save As...', click() {  saveMenu(true); } },
 		{label:'Export...', click() {  mainWindow.webContents.send("labeller:menuExport") } },
-		//{label:'Export...', click() {  pvoc.pascalVOCExport( "export_test", file_list ); } }, //bypass dialogue for testing
-		
 		{type: 'separator' },
 		{label:'Exit', click() { checkSaveOnExit(); } }
 	  ]
@@ -245,6 +243,11 @@ ipcMain.on('app:preserveState', (event, arg) => {
 			if(save())
 				needsSave = false;
 				mainWindow.close();
+			break;
+		case "saveAndNewSession":
+			if(save())
+				needsSave = false;
+				startNewSession();
 			break;
 		case "pascalVOCExport":
 			doPascalVOCExport(arg.dir);
@@ -656,23 +659,43 @@ ipcMain.on('app:SyncListedCategoryMetadata', (event, arg) => {
 });
 
 
-function checkSaveOnExit(){
+function checkSaveOnExit(newSession=false){
 
 	if(needsSave){
 		let response = dialog.showMessageBoxSync( { "message": "Save changes?", "buttons": [ "Yes", "No", "Cancel" ], "defaultId": 0   }  )
 		if( response == 0 ){
-			return saveMenu(false,true);
+			return saveMenu(false,true,newSession);
 		}else if (response == 1){
 			needsSave = false;
-			mainWindow.close();
+			if( newSession )
+				startNewSession();
+			else
+				mainWindow.close();
 		}else if(response == 2){
 			return false;
 		}
+	}else{
+		if( newSession )
+			startNewSession();
 	}
 
 	return true;
 		
 }
+
+function startNewSession(){
+	needsSave = false;
+	loaded_labelling_file_content = undefined;
+	base_image_directory = "";
+	cur_image = 0;
+	category_meta_data = [];
+	file_list = [];
+	saveFileName = "";
+
+	mainWindow.close();
+	createConfigWindow();
+}
+
 
 //locate an exact (relative) path within the set of files being labelled
 function findExactFilePath(fpath){
@@ -687,7 +710,7 @@ function findExactFilePath(fpath){
 }
 
 //Popup the save dialog
-function saveMenu(saveAs=false, quit=false){
+function saveMenu(saveAs=false, quit=false, newSession=false){
 	if(saveFileName == "" || saveAs){
 		const savePath = dialog.showSaveDialogSync(null);
 		if( savePath == undefined )
@@ -703,10 +726,13 @@ function saveMenu(saveAs=false, quit=false){
 
 	
 	//Ask the renderer to preserve the state of the current image being labelled and then it calls back to actually do the save
-	if( quit )
+	if( newSession )
+		mainWindow.webContents.send("labeller:saveAndNewSession")
+	else if( quit )
 		mainWindow.webContents.send("labeller:saveAndQuit")
 	else
 		mainWindow.webContents.send("labeller:save")
+	
 
 	return true;
 }
