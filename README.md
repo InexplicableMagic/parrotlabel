@@ -1,5 +1,5 @@
-# AnnImage
-AnnImage is a graphical tool for creating training data for use in image recognition machine learning applications. Images can be annotated with rectangles to mark-up and label regions of interest. The labelled images can be used a basis for training various machine learning frameworks including the [TensorFlow Object Detection API](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html).
+# ParrotLabel
+ParrotLabel is a graphical tool for creating training data for use in image recognition machine learning applications. Images can be annotated with rectangles to mark-up and label regions of interest. The labelled images can be used a basis for training various machine learning frameworks including the [TensorFlow Object Detection API](https://tensorflow-object-detection-api-tutorial.readthedocs.io/en/latest/training.html).
 
 ![](img/HelpLabellerWindow.png)    
 <sup>*Photo credit S. Nivethika*</sup>
@@ -10,4 +10,7 @@ AnnImage is a graphical tool for creating training data for use in image recogni
 * Supports JPEG, PNG, WebP and GIF.
 * Keyboard nudge to precisely align boxes using the arrow keys
 * Image zoom using the mouse scroll wheel
+* Box positions are recorded at arbitrarily high precision for any zoom level
 * Convenient custom hotkeys to switch between categories
+
+
