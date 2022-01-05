@@ -691,6 +691,8 @@ function checkSaveOnExit(newSession=false){
 	}else{
 		if( newSession )
 			startNewSession();
+		else
+			mainWindow.close();
 	}
 
 	return true;
