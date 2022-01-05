@@ -1,0 +1,40 @@
+{
+ "name": "ParrotLabel",
+ "version": "1.0.0",
+ "main": "main.js",
+ "author": "Inexplicable Magic <none@none.com>",
+
+ "devDependencies": {
+    "electron": "16.0.4"
+  },
+
+ "dependencies": {
+	"object-to-xml": "^2.0.0"
+ },
+
+ "build": {
+	"extraResources": 
+	[
+		{
+			"from": "./js/iafsUtils.js",
+			"to": "./js/iafsUtils.js",
+			"filter": [
+			  "**/*"
+			]
+		}
+	],
+
+	"linux": {
+      		"icon" : "build/images/icon.png",
+      		"target": ["tar.gz", "deb"]
+    	},
+
+	"win": {
+		"publisherName": "Inexplicable Magic",
+      		"icon" : "build/images/icon.png",
+      		"target": "nsis"
+    	}
+ }
+
+}
+

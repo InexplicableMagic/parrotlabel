@@ -545,8 +545,19 @@ ipcMain.on('app:testJSONFileFormatState', (event, arg) => {
 //Start a parallel process to scan the file system from the specified images directory
 ipcMain.on('app:initialiseLabellingState', (event, arg) => {
 
-	const worker = new Worker(`
-		const iafsUtils = require ('./js/iafsUtils.js');
+	//Get round the problem that the worker thread cannot find the "iafsUtils" dependendency when inside an ASAR file
+	//The build makes a copy of the file outside the ASAR archive and then this code finds which directory it was copied it
+	//This path is then passed into the worker for it to include
+	let resourceDir = path.normalize(__dirname);
+	if( (!iafsUtils.directoryIsReadable( resourceDir )) && resourceDir.endsWith( '.asar' ) )
+		resourceDir = path.dirname( resourceDir )
+	let iafsUtilsPath = path.normalize(path.join(resourceDir,'js/iafsUtils.js'))
+	let escaped = iafsUtilsPath.replaceAll('\\','\\\\');	//Escape slashes for windows builds
+
+	const worker = new Worker(
+		'const iafsUtilsPath="'+escaped+'"'+
+		`
+		const iafsUtils = require (iafsUtilsPath);
 		const { parentPort } = require('worker_threads');
 		function processMessage(message){
 			let base_image_directory = message.base_image_directory;
