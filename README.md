@@ -13,7 +13,7 @@ ParrotLabel is a graphical tool for creating training data for use in image reco
 * Box positions are recorded at arbitrarily high precision for any zoom level
 * Convenient custom hotkeys to switch between categories
 
-##Builds
+## Builds
 
 Builds are available from the releases page for Linux as either a .deb package or a tar.gz.
 
