@@ -17,7 +17,7 @@ ParrotLabel is a graphical tool for creating training data for use in image reco
 
 Builds are available from the releases page for Linux as either a .deb package or a tar.gz.
 
-On Ubuntu (and other Debian derrivates) you can often simply double click the .deb package to install. For other distros unpack the tar.gz archive and run the "parrotlabel" binary found in the top level directory.
+On Ubuntu (and other Debian derivatives) you can often simply double click the .deb package to install. For other distros unpack the tar.gz archive and run the "parrotlabel" binary found in the top level directory.
 
 
 ## Quickstart Tutorial
