@@ -25,7 +25,7 @@ On Ubuntu (and other Debian derivatives) you can often simply double click the .
 ### Starting a New Labelling Session
 
 * Ensure "Start new session" is selected
-* Click "Browse" under Set Images Directory. Choose the diretory containg the images to be labelled.
+* Click "Browse" under Set Images Directory. Choose the directory containing the images to be labelled.
 * Sub-directories will also be inspected recursively for images
 * It is assumed image files have a standard file extension such as .jpg, .jpeg, .gif, .png or .webp
 
