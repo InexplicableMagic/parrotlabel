@@ -1,39 +1,37 @@
 {
- "name": "ParrotLabel",
- "version": "1.0.0",
- "main": "main.js",
- "author": "Inexplicable Magic <none@none.com>",
- "description": "A tool for annotating image training data for object detection and other machine learning applications.",
+	 "name": "ParrotLabel",
+	 "version": "1.0.0",
+	 "main": "main.js",
+	 "author": "Inexplicable Magic <none@none.com>",
+	 "description": "A tool for annotating image training data for object detection and other machine learning applications.",
+	 "homepage": "https://github.com/InexplicableMagic/parrotlabel",
+	
+	 "devDependencies": {
+	 	 "electron": "16.0.4"
+	 },
+	 "dependencies": {
+		"object-to-xml": "^2.0.0"
+ 	 },
 
- "devDependencies": {
-    "electron": "16.0.4"
-  },
-
- "dependencies": {
-	"object-to-xml": "^2.0.0"
- },
-
- "build": {
-	"extraResources": 
-	[
-		{
-			"from": "./js/iafsUtils.js",
-			"to": "./js/iafsUtils.js",
-			"filter": [
-			  "**/*"
-			]
-		}
-	],
-
-	"linux": {
-      		"target": ["tar.gz", "deb"]
-    	},
-
-	"win": {
-		"publisherName": "Inexplicable Magic",
-      		"target": "nsis"
-    	}
- }
-
+	 "build": {
+	 	 "extraResources": [
+	 	 	 {
+	 	 	 	 "from": "./js/iafsUtils.js",
+	 	 	 	 "to": "./js/iafsUtils.js",
+	 	 	 	 "filter": [
+	 	 	 	 	 "**/*"
+	 	 	 	 ]
+	 	 	 }
+	 	 ],
+	 	 "linux": {
+	 	 	 "target": [
+	 	 	 	 "tar.gz",
+	 	 	 	 "deb"
+	 	 	 ]
+	 	 },
+	 	 "win": {
+	 	 	 "publisherName": "Inexplicable Magic",
+	 	 	 "target": "nsis"
+	 	 }
+	 }
 }
-

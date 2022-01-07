@@ -112,6 +112,8 @@ function createLabellerWindow() {
 		{label:'Quickstart Tutorial', click(){ helpWindow("help-quickstart.html", 900, 900); }},
 		{label:'Keyboard Shortcuts', click(){ helpWindow("help-keyboard-shortcuts.html", 600, 400); }},
 		{label:'File Format Description', click(){ helpWindow("help-file-format.html", 900, 900); }},
+		{type: 'separator' },
+		{label:'About ParrotLabel', click(){ helpWindow("help-about.html", 500, 500); }},
 	  ]
 	},
 
