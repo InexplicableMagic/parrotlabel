@@ -3,6 +3,7 @@
  "version": "1.0.0",
  "main": "main.js",
  "author": "Inexplicable Magic <none@none.com>",
+ "description": "A tool for annotating image training data for object detection and other machine learning applications.",
 
  "devDependencies": {
     "electron": "16.0.4"
@@ -25,13 +26,11 @@
 	],
 
 	"linux": {
-      		"icon" : "build/images/icon.png",
       		"target": ["tar.gz", "deb"]
     	},
 
 	"win": {
 		"publisherName": "Inexplicable Magic",
-      		"icon" : "build/images/icon.png",
       		"target": "nsis"
     	}
  }
