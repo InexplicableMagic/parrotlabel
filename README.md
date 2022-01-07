@@ -67,7 +67,9 @@ Click the "Add New Box Category" button
 * Previously drawn boxes can be selected by Shift+Click
 * The labelled category of boxes can be modified by selecting the required new category and then clicking box while holding down the right Alt key (often labelled Alt Gr)
 * Boxes can be be deleted by selecting (Shift+click) then typing either Backspace or Del
-* Exporting Labelling Data
+
+### Exporting Labelling Data
+
 * First save the labelling state using "Save" from the "File" menu. The labeller cannot currently import the export formats, therefore always save a copy in the native format so that the session can be continued later if required.
 * Choose "Export" from the "File" menu
 * Choose either Pascal VOC or CSV (Comma Separated Values) format as required.
