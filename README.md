@@ -19,7 +19,6 @@ Builds are available from the releases page for Linux as either a .deb package o
 
 On Ubuntu (and other Debian derivatives) you can often simply double click the .deb package to install. For other distros unpack the tar.gz archive and run the "parrotlabel" binary found in the top level directory.
 
-
 ## Quickstart Tutorial
 
 ### Starting a New Labelling Session
@@ -78,3 +77,5 @@ Click the "Add New Box Category" button
 
 * When using Pascal VOC mode, it is the convention that the labelling data for each image is stored in a separate file. Therefore a directory must chosen where the set of files may be saved.
 * Choose the directory using the "Browse" button and then click "Do Export". A set of XML files will then be written to the directory (one per image).
+
+https://user-images.githubusercontent.com/79043278/148678213-a705fb35-bf72-4c19-9eb2-7d52caaac2ee.mp4
