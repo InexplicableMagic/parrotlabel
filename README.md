@@ -15,7 +15,7 @@ ParrotLabel is a graphical tool for creating training data for use in image reco
 
 ## Builds
 
-Builds are available from the releases page for Linux as either a .deb package or a tar.gz.
+Builds are available from the [releases](https://github.com/InexplicableMagic/parrotlabel/releases/) page for Linux as either a .deb package or a tar.gz.
 
 On Ubuntu (and other Debian derivatives) you can often simply double click the .deb package to install. For other distros unpack the tar.gz archive and run the "parrotlabel" binary found in the top level directory.
 
@@ -79,3 +79,5 @@ Click the "Add New Box Category" button
 * Choose the directory using the "Browse" button and then click "Do Export". A set of XML files will then be written to the directory (one per image).
 
 https://user-images.githubusercontent.com/79043278/148678213-a705fb35-bf72-4c19-9eb2-7d52caaac2ee.mp4
+
+<sup>*Source video credit: [Gpkp](https://commons.wikimedia.org/wiki/File:Pet_Parrot_(02).ogv)*</sup>
