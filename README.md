@@ -6,9 +6,9 @@ ParrotLabel is a graphical tool for creating training data for use in image reco
 
 ## Features
 * Annotations can be saved in JSON, CSV or XML (Pascal VOC format used by ImageNet)
-* Scripts are available to [convert the annontations](https://github.com/InexplicableMagic/parrotlabel-scripts) to TensorFlow TFRecords format
+* Scripts are available to [convert the annotations](https://github.com/InexplicableMagic/parrotlabel-scripts) to TensorFlow TFRecords format
 * Can hande large sets of images
-* Supports JPEG, PNG, WebP and GIF.
+* Supports JPEG, PNG, WebP and GIF
 * Keyboard nudge to precisely align boxes using the arrow keys
 * Image zoom using the mouse scroll wheel
 * Box positions are recorded at arbitrarily high precision for any zoom level
