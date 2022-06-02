@@ -996,7 +996,7 @@ function deleteBoxesOnScreenByCategory( categoryName ){
 	let toDelete = [];
 	for(let i=0;i<appliedLabelsList.length;i++){
 		boxlabel = document.getElementById( appliedLabelsList[i] ).boxlabel;
-		if(  boxlabel == selectedCategory ) {
+		if(  boxlabel == categoryName ) {
 			toDelete.push( appliedLabelsList[i] );
 		}
 	}
