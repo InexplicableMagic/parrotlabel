@@ -1,6 +1,6 @@
 {
 	 "name": "ParrotLabel",
-	 "version": "1.0.0",
+	 "version": "1.0.1",
 	 "main": "main.js",
 	 "author": "Inexplicable Magic <none@none.com>",
 	 "description": "A tool for annotating image training data for object detection and other machine learning applications.",
